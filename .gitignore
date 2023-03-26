@@ -5,3 +5,17 @@
 __pycache__/
 
 *.csv
+
+# stm32
+.metadata/
+.settings/
+Drivers/
+Debug/
+
+*.ld
+*.launch
+*.ioc
+*.launch
+*.project
+*.mxproject
+*.cproject
