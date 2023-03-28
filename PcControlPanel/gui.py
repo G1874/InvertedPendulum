@@ -83,7 +83,6 @@ class Gui():
 
         leftButton = Button(master=top,text='Quit',font=('sans-serif',13),image=im1)
         rightButton = Button(master=top,text='Quit',font=('sans-serif',13),image=im2)
-        Entry(master=top,width=5,bg='#293241',fg='#E0FBFC').grid(row=0,column=1)
 
         leftButton.grid(row=0,column=0)
         rightButton.grid(row=0,column=2)
@@ -103,10 +102,10 @@ class Gui():
         self.serialcom.sendInstruction(instructionNrr=65)
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=15)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=13)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=15)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=13)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)

@@ -46,8 +46,8 @@ extern const int32_t LQR_K_MATRIX[4];
 
 #define SCALE_FACTOR 10000
 
-#define DISTANCE_NORMALIZATION 20UL
-#define ANGLE_NORMALIZATION 20UL
+#define DISTANCE_NORMALIZATION 20
+#define ANGLE_NORMALIZATION 20
 
 /* Sample time in ms */
 #define TP 20
