@@ -25,7 +25,7 @@ class Gui():
         self.createSerialInstance()
         self.defineLabels()
         self.defineGraph()
-        self.anim = animation.FuncAnimation(fig=self.fig, func=self.animate, frames=10)
+        self.anim = animation.FuncAnimation(fig=self.fig,func=self.animate,frames=10)
         self.defineControls()
         self.defineTextBox()
         self.root.mainloop()
@@ -45,10 +45,11 @@ class Gui():
         frm.configure(background='#3D5A80')
 
         Button(master=frm,text='Start Receiving',font=('sans-serif',13),command=self.startReceiving).grid(row=0,column=0)
-        Button(master=frm,text='Manual Control',font=('sans-serif',13),command=self.manualControl).grid(row=1,column=0)
         Button(master=frm,text='Stop Receiving',font=('sans-serif',13),command=self.stopReceiving).grid(row=0,column=1)
         Button(master=frm,text='Automatic Control',font=('sans-serif',13),command=self.automaticMode).grid(row=1,column=1)
         Button(master=frm,text='Stop motor',font=('sans-serif',13),command=self.StopMotor).grid(row=2,column=1)
+        self.manControlButton = Button(master=frm,text='Manual Control',font=('sans-serif',13),command=self.manualControl)
+        self.manControlButton.grid(row=1,column=0)
 
         for widget in frm.winfo_children():
             widget.grid(padx=20,pady=10,sticky='e')
@@ -61,28 +62,29 @@ class Gui():
 
         im = ImageTk.PhotoImage(Image.open(r'.\images\three_dots_icon_159804.ico').
                                 resize((25,25),Image.ANTIALIAS))
-        misc = Button(master=self.root,image=im,command=self.aditionalOptionsWindow)
-        misc.place(x=1220,y=641)
-        misc.im = im
+        self.misc = Button(master=self.root,image=im,command=self.aditionalOptionsWindow)
+        self.misc.place(x=1220,y=641)
+        self.misc.im = im
 
     def automaticMode(self):
         self.serialcom.sendInstruction(instructionNrr=77)
 
     def manualControl(self):
-        top = Toplevel()
-        top.title('Manual Control')
-        top.iconbitmap(".\images\stop_player_multimedia_control_icon_232870.ico")
-        top.configure(background='#3D5A80')
-        top.focus_set()
-        top.grab_set()
+        self.manControlButton.configure(state='disabled')
+
+        self.top2 = Toplevel()
+        self.top2.title('Manual Control')
+        self.top2.iconbitmap(".\images\stop_player_multimedia_control_icon_232870.ico")
+        self.top2.configure(background='#3D5A80')
+        self.top2.protocol("WM_DELETE_WINDOW",self.closeManControlWindow)
 
         im1 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Left-Circular.ico').
                                 resize((25,25),Image.ANTIALIAS))
         im2 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Right-Circular.ico').
                                 resize((25,25),Image.ANTIALIAS))
 
-        leftButton = Button(master=top,text='Quit',font=('sans-serif',13),image=im1)
-        rightButton = Button(master=top,text='Quit',font=('sans-serif',13),image=im2)
+        leftButton = Button(master=self.top2,text='Quit',font=('sans-serif',13),image=im1)
+        rightButton = Button(master=self.top2,text='Quit',font=('sans-serif',13),image=im2)
 
         leftButton.grid(row=0,column=0)
         rightButton.grid(row=0,column=2)
@@ -96,10 +98,14 @@ class Gui():
         leftButton.im1 = im1
         rightButton.im2 = im2
 
-        for widget in top.winfo_children():
+        for widget in self.top2.winfo_children():
             widget.grid(padx=20,pady=10)
 
         self.serialcom.sendInstruction(instructionNrr=65)
+
+    def closeManControlWindow(self):
+        self.manControlButton.configure(state='normal')
+        self.top2.destroy()
 
     def rightInstr(self,event):
         self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=13)
@@ -114,13 +120,25 @@ class Gui():
         self.serialcom.sendInstruction(instructionNrr=72)
 
     def aditionalOptionsWindow(self):
-        top = Toplevel()
-        top.title('Aditional Options')
-        top.iconbitmap("images\stop_player_multimedia_control_icon_232870.ico")
-        top.configure(background='#3D5A80')
-        top.focus_set()                                                        
-        top.grab_set()
-        Checkbutton(master=top,text='Save to csv file',variable=self.save_to_file).pack()
+        self.misc.configure(state="disabled")
+
+        self.top1 = Toplevel()
+        self.top1.title('Aditional Options')
+        self.top1.iconbitmap("images\stop_player_multimedia_control_icon_232870.ico")
+        self.top1.configure(background='#3D5A80')
+        self.top1.protocol("WM_DELETE_WINDOW",self.closeAdditionalWindow)
+
+        self.defineAdditionalGraph(window=self.top1)
+        self.anim2 = animation.FuncAnimation(fig=self.fig2,func=self.animateSpeed,frames=10)
+
+        for widget in self.top1.winfo_children():
+            widget.grid(padx=20,pady=10,sticky='e')
+
+        Checkbutton(master=self.top1,text='Save to csv file',font=('sans-serif',13),variable=self.save_to_file).grid(row=1,column=0)
+
+    def closeAdditionalWindow(self):
+        self.misc.configure(state="normal")
+        self.top1.destroy()
 
     def defineGraph(self):
         frm = Frame(master=self.root)
@@ -141,6 +159,21 @@ class Gui():
 
         canvas.get_tk_widget().pack()
 
+    def defineAdditionalGraph(self,window):
+        frm = Frame(master=window)
+        frm.grid(row=0,column=0)
+
+        plt.style.use("serious_style")
+
+        self.fig2 = Figure(figsize=(6,3), dpi=100)
+        self.c = self.fig2.add_subplot(111)
+
+        canvas = FigureCanvasTkAgg(figure=self.fig2, master=frm)
+        canvas.draw()
+        NavigationToolbar2Tk(canvas=canvas, window=frm)
+
+        canvas.get_tk_widget().pack()
+
     def animate(self,i):
         self.a.clear()
         self.b.clear()
@@ -149,6 +182,10 @@ class Gui():
         self.b.plot(self.serialcom.angle)
 
         self.a.set_ylim(ymin=0,ymax=45)
+
+    def animateSpeed(self,i):
+        self.c.clear()
+        self.c.plot(self.serialcom.distance)
 
     def toggleAnimationPause(self):
         if self.paused:
