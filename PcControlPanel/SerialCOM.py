@@ -18,6 +18,7 @@ class SerialCommunication():
         """ data variables and lists """
         self.dist = 0
         self.ang = 0
+        self.scale_factor = 10000
         self.comNumber = 0
         self.errorNumber = 0
         self.distance = collections.deque(np.zeros(200))

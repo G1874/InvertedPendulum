@@ -32,7 +32,7 @@ class Gui():
         
     def defineLabels(self):
         self.root.title("Pendulum Control Panel")
-        self.root.iconbitmap("images\stop_player_multimedia_control_icon_232870.ico")
+        self.root.iconbitmap(".\images\stop_player_multimedia_control_icon_232870.ico")
         self.root.attributes("-fullscreen", True)
         self.root.configure(background='#3D5A80')
 
@@ -59,7 +59,7 @@ class Gui():
         clearText = Button(master=self.root,text='Clear',padx=15,font=('sans-serif',8),command=self.clearTextBox)
         clearText.place(x=1440,y=450)
 
-        im = ImageTk.PhotoImage(Image.open(r'images\three_dots_icon_159804.ico').
+        im = ImageTk.PhotoImage(Image.open(r'.\images\three_dots_icon_159804.ico').
                                 resize((25,25),Image.ANTIALIAS))
         misc = Button(master=self.root,image=im,command=self.aditionalOptionsWindow)
         misc.place(x=1220,y=641)
@@ -71,14 +71,14 @@ class Gui():
     def manualControl(self):
         top = Toplevel()
         top.title('Manual Control')
-        top.iconbitmap("images\stop_player_multimedia_control_icon_232870.ico")
+        top.iconbitmap(".\images\stop_player_multimedia_control_icon_232870.ico")
         top.configure(background='#3D5A80')
         top.focus_set()
         top.grab_set()
 
-        im1 = ImageTk.PhotoImage(Image.open(r'images\Icons8-Windows-8-Arrows-Left-Circular.ico').
+        im1 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Left-Circular.ico').
                                 resize((25,25),Image.ANTIALIAS))
-        im2 = ImageTk.PhotoImage(Image.open(r'images\Icons8-Windows-8-Arrows-Right-Circular.ico').
+        im2 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Right-Circular.ico').
                                 resize((25,25),Image.ANTIALIAS))
 
         leftButton = Button(master=top,text='Quit',font=('sans-serif',13),image=im1)

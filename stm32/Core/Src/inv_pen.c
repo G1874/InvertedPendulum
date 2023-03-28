@@ -1,7 +1,7 @@
 /*************************************************************************
 
 Author:   Grzegorz Niedziółka
-File:     as5600.c
+File:     inv_pen.c
 Software: STM32L1xx_HAL_Driver
 Hardware: STM32L1xx
 License:  The MIT License (MIT)
@@ -33,6 +33,8 @@ LICENSE:
 *************************************************************************/
 
 #include "inv_pen.h"
+
+const int32_t LQR_K_MATRIX[4] = {-3.1623,-4.2713,-36.6284,-10.0515};
 
 HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, uint8_t dataMarker)
 {
@@ -127,7 +129,7 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 	return 0;
 }
 
-void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, uint8_t* speed, uint8_t* mode, uint8_t* flag)
+void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag)
 {
 	if(huart->Instance == USART2) {
 		/* Manual change of stepper motor speed and direction */
@@ -217,21 +219,43 @@ void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, uint16_t* dist
 	*distance = (*FechoTime - *RechoTime) / 58;
 }
 
-void ControlAlg(uint16_t distance, uint16_t angle, uint8_t mode, uint8_t* speed, uint8_t* direction)
+void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
 {
 	if(mode == 1) {
-		*speed = 13;
-		if(distance==20) {
-			*speed = 0;
-		}else if(distance>20) {
-			*direction = 0;
-		} else if(distance<20) {
-			*direction = 1;
+		/* LQR control algorithm */
+
+		int64_t u;
+		int64_t x[4];
+
+		x[0] = (distance - DISTANCE_NORMALIZATION) * (SCALE_FACTOR / 100); // distance in meters times SCALE_FACTOR
+		x[1] = *speed;                                                     // previous speed
+		x[2] = (angle - ANGLE_NORMALIZATION) * 31415 / 180;                // angle in radians times SCALE_FACTOR
+		x[3] = (x[2] - *p_angle) * 1000 / TP;                              // angular speed in radians/second times SCALE_FACTOR
+
+		/****
+		u = -K*(x-r)
+		                          [x1]   [r1]
+		                          [x2]   [r2]
+		u = [-k1 -k2 -k3 -k4] * ( [x3] - [r3] )
+		                          [x4]   [r4]
+
+		u = -k1(x1-r1) -k2(x2-r2) -k3(x3-r3) -k4(x4-r4)
+		****/
+
+		for(int i=0;i<4;i++) {
+			u += -LQR_K_MATRIX[i] * x[i] / SCALE_FACTOR;
 		}
+
+		*speed = *speed + u;
+
+		*p_angle = x[2];
+
+	} else {
+		*p_angle = (angle - ANGLE_NORMALIZATION) * 31415 / 180;
 	}
 }
 
-void StepperNewPWM(uint8_t speed, uint16_t* freq, uint8_t* flag)
+void StepperNewPWM(uint8_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag)
 {
 	*freq = speed * 100;
 	*flag = 0;

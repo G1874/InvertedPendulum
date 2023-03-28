@@ -50,8 +50,9 @@
 uint8_t debug1;
 
 uint8_t dataIn[2];
-uint16_t frequency, angle, echo1, echo2, distance;
-uint8_t speed, direction;
+uint16_t frequency, echo1, echo2, distance ,angle;
+int32_t p_angle, speed;
+uint8_t direction;
 uint8_t flag1,flag2,flag3,flag4,mode;
 uint8_t error;
 /* USER CODE END PV */
@@ -122,7 +123,10 @@ int main(void)
 	  flag2 = 0;
 	  flag3 = 0;
 	  flag4 = 0;
-	  speed = 10;
+
+	  speed = 0;
+	  angle = 0;
+	  p_angle = 0;
 	  /* Initialization End */
 
   /* USER CODE END 2 */
@@ -146,9 +150,9 @@ int main(void)
 
 	  if(flag2) {
 		  HCSR04_GetDistance(&echo1, &echo2, &distance);
-		  ControlAlg(distance, angle, mode, &speed, &direction);
-		  StepperNewPWM(speed, &frequency, &flag3);
-		  PcSend16bitData(&huart2, &distance, 97);
+		  ControlAlg(distance, angle, &p_angle, &speed, mode);
+		  StepperNewPWM(speed, &direction, &frequency, &flag3);
+		  PcSend16bitData2(&huart2, &distance, &angle, 97);
 		  flag2 = 0;
 	  }
 

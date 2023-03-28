@@ -20,3 +20,6 @@ Startup/
 *.project
 *.mxproject
 *.cproject
+
+output/
+test.c

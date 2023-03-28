@@ -1,7 +1,7 @@
 /*************************************************************************
 
 Author:   Grzegorz Niedziółka
-File:     as5600.h
+File:     inv_pen.h
 Software: STM32L1xx_HAL_Driver
 Hardware: STM32L1xx
 License:  The MIT License (MIT)
@@ -40,6 +40,20 @@ LICENSE:
 
 #include "stm32l1xx_hal.h"
 
+/***********************	CONSTANTS & MACROS	   ***********************/
+
+extern const int32_t LQR_K_MATRIX[4];
+
+#define SCALE_FACTOR 10000
+
+#define DISTANCE_NORMALIZATION 20UL
+#define ANGLE_NORMALIZATION 20UL
+
+/* Sample time in ms */
+#define TP 20
+
+#define MAX_SPEED 10000
+
 /***********************    FUNCTION PROTOTYPES    ***********************/
 
 /* FUNCTIONS FOR COMMUNICATION WITH PC SIDE PYTHON GUI */
@@ -65,11 +79,11 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 						int16_t DirPin, TIM_HandleTypeDef* pwmTimHandle, uint32_t pwmTimChannel, uint8_t mode);
 
 /* UART RX INTERUPT PROCEDURE */
-void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, uint8_t* speed, uint8_t* mode, uint8_t* flag);
+void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag);
 
 /* FUNCTIONS FOR COMPUTING NECESSARY PARAMETERS */
 void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, uint16_t* distance);
-void ControlAlg(uint16_t distance, uint16_t angle, uint8_t mode, uint8_t* speed, uint8_t* direction);
-void StepperNewPWM(uint8_t speed, uint16_t* freq, uint8_t* flag);
+void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
+void StepperNewPWM(uint8_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag);
 
 #endif /* INV_PEN_H_ */
