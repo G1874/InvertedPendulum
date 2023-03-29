@@ -141,10 +141,10 @@ int main(void)
 		  if(error!=0) {
 			  Error_Handler();
 		  }
-		  //if(AS5600_GetAngle(as, &angle) != HAL_OK) {
-		  //error = 17;
-		  //Error_Handler();
-		  //}
+		  if(AS5600_GetRawAngle(as, &angle) != HAL_OK) {
+			  error = 17;
+		  	  Error_Handler();
+		  }
 		  flag1 = 0;
 	  }
 

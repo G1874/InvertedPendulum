@@ -108,10 +108,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=2)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=1)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=2)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=1)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -131,10 +131,18 @@ class Gui():
         self.defineAdditionalGraph(window=self.top1)
         self.anim2 = animation.FuncAnimation(fig=self.fig2,func=self.animateSpeed,frames=10)
 
-        for widget in self.top1.winfo_children():
-            widget.grid(padx=20,pady=10,sticky='e')
+        frm = Frame(master=self.top1)
+        frm.grid(row=1,column=0)
+        frm.configure(background='#3D5A80')
 
-        Checkbutton(master=self.top1,text='Save to csv file',font=('sans-serif',13),variable=self.save_to_file).grid(row=1,column=0)
+        Button(master=frm,text='Set AS5600 zero position',font=('sans-serif',13)).grid(row=1,column=0)
+        Button(master=frm,text='Get AS5600 agc register',font=('sans-serif',13)).grid(row=1,column=1)
+        Button(master=frm,text='Get AS5600 magnet status',font=('sans-serif',13)).grid(row=1,column=2)
+        Checkbutton(master=frm,text='Save to csv file',font=('sans-serif',13),variable=self.save_to_file).grid(row=1,column=3)
+
+        for widget in frm.winfo_children():
+            widget.grid(padx=20,pady=10,sticky='w')
+
 
     def closeAdditionalWindow(self):
         self.misc.configure(state="normal")
@@ -165,7 +173,7 @@ class Gui():
 
         plt.style.use("serious_style")
 
-        self.fig2 = Figure(figsize=(6,3), dpi=100)
+        self.fig2 = Figure(figsize=(10,3), dpi=100)
         self.c = self.fig2.add_subplot(111)
 
         canvas = FigureCanvasTkAgg(figure=self.fig2,master=frm)
@@ -182,6 +190,7 @@ class Gui():
         self.b.plot(self.serialcom.angle)
 
         self.a.set_ylim(ymin=0,ymax=45)
+        self.b.set_ylim(ymin=0,ymax=4095)
 
     def animateSpeed(self,i):
         self.c.clear()

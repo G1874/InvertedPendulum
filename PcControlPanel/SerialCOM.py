@@ -87,13 +87,13 @@ class SerialCommunication():
             self.angle.popleft()
             self.distance.append(self.dist)
             self.angle.append(self.ang)
+            print(self.ang)
         
         if marker == '75':
             data = self.serialInst.read(5).hex()
             self.spd = int(data[2:10],16)
             if int(data[0:2],16) == 1:
                 self.spd = -self.spd
-            print(self.spd)
             self.speed.popleft()
             self.speed.append(self.spd)
 
