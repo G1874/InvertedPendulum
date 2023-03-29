@@ -45,6 +45,7 @@ LICENSE:
 extern const int32_t LQR_K_MATRIX[4];
 
 #define SCALE_FACTOR 10000
+#define ACC_TO_SPD 2
 
 #define DISTANCE_NORMALIZATION 20
 #define ANGLE_NORMALIZATION 20
@@ -53,14 +54,17 @@ extern const int32_t LQR_K_MATRIX[4];
 #define TP 20
 
 #define MAX_SPEED 10000
+#define STEPS_PER_REVOLUTION 200
+#define RADIUS_FACTOR 77
 
 /***********************    FUNCTION PROTOTYPES    ***********************/
 
 /* FUNCTIONS FOR COMMUNICATION WITH PC SIDE PYTHON GUI */
 HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, uint8_t dataMarker);
-HAL_StatusTypeDef PcSend16bitData(UART_HandleTypeDef* uart, uint16_t* data, uint8_t dataMarker);
-HAL_StatusTypeDef PcSend16bitData2(UART_HandleTypeDef* uart, uint16_t* data1, uint16_t* data2, uint8_t dataMarker);
-HAL_StatusTypeDef PcSend32bitData(UART_HandleTypeDef* uart ,uint32_t* data, uint8_t dataMarker);
+HAL_StatusTypeDef PcSend16bitData(UART_HandleTypeDef* uart, uint16_t data, uint8_t dataMarker);
+HAL_StatusTypeDef PcSend16bitData2(UART_HandleTypeDef* uart, uint16_t data1, uint16_t data2, uint8_t dataMarker);
+HAL_StatusTypeDef PcSend32bitData(UART_HandleTypeDef* uart ,uint32_t data, uint8_t dataMarker);
+HAL_StatusTypeDef PcSend32bitSignedData(UART_HandleTypeDef* uart , int32_t data, uint8_t dataMarker);
 
 /* FUNCTION FOR STARTING INPUT CAPTURE AND SYNCHRONIZATION TIMERS */
 uint8_t InvPen_Init(TIM_HandleTypeDef* RtimHandle, uint32_t RtimChannel, TIM_HandleTypeDef* FtimHandle, uint32_t FtimChannel,
@@ -84,6 +88,6 @@ void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* directi
 /* FUNCTIONS FOR COMPUTING NECESSARY PARAMETERS */
 void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, uint16_t* distance);
 void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
-void StepperNewPWM(uint8_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag);
+void StepperNewPWM(int32_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag);
 
 #endif /* INV_PEN_H_ */

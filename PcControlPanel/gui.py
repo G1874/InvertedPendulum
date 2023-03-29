@@ -108,10 +108,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=13)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=2)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=13)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=2)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -153,9 +153,9 @@ class Gui():
         self.a_text = self.a.text(x=0.5,y=0.5,s='')
         self.b_text = self.b.text(x=0.5,y=0.5,s='')
 
-        canvas = FigureCanvasTkAgg(figure=self.fig, master=frm)
+        canvas = FigureCanvasTkAgg(figure=self.fig,master=frm)
         canvas.draw()
-        NavigationToolbar2Tk(canvas=canvas, window=frm)
+        NavigationToolbar2Tk(canvas=canvas,window=frm)
 
         canvas.get_tk_widget().pack()
 
@@ -168,9 +168,9 @@ class Gui():
         self.fig2 = Figure(figsize=(6,3), dpi=100)
         self.c = self.fig2.add_subplot(111)
 
-        canvas = FigureCanvasTkAgg(figure=self.fig2, master=frm)
+        canvas = FigureCanvasTkAgg(figure=self.fig2,master=frm)
         canvas.draw()
-        NavigationToolbar2Tk(canvas=canvas, window=frm)
+        NavigationToolbar2Tk(canvas=canvas,window=frm)
 
         canvas.get_tk_widget().pack()
 
@@ -185,7 +185,8 @@ class Gui():
 
     def animateSpeed(self,i):
         self.c.clear()
-        self.c.plot(self.serialcom.distance)
+        self.c.plot(self.serialcom.speed)
+        #self.c.set_ylim(ymin=0,ymax=100000)
 
     def toggleAnimationPause(self):
         if self.paused:

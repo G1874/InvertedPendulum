@@ -18,11 +18,13 @@ class SerialCommunication():
         """ data variables and lists """
         self.dist = 0
         self.ang = 0
+        self.spd = 0
         self.scale_factor = 10000
         self.comNumber = 0
         self.errorNumber = 0
         self.distance = collections.deque(np.zeros(200))
         self.angle = collections.deque(np.zeros(200))
+        self.speed = collections.deque(np.zeros(200))
 
         if CreateInstanceOfSerial == True:
             try:
@@ -58,6 +60,7 @@ class SerialCommunication():
                 self.stp = False
                 self.distance = collections.deque(np.zeros(200))
                 self.angle = collections.deque(np.zeros(200))
+                self.speed = collections.deque(np.zeros(200))
                 self.comNumber = 3
                 while not self.stp:
                     if self.serialInst.in_waiting > 0:
@@ -75,21 +78,30 @@ class SerialCommunication():
 
     def handleData(self, communicate):
         marker = communicate.hex()
-        """ value in hex """
-        if marker == '61':
-            data = self.serialInst.read(2).hex()
+
+        if marker == '61': #value in hex
+            data = self.serialInst.read(4).hex()
             self.dist = int(data[0:4],16)
-            #self.ang = int(data[4:8],16)
+            self.ang = int(data[4:8],16)
             self.distance.popleft()
             self.angle.popleft()
             self.distance.append(self.dist)
-            self.angle.append(0)
-        """ value in hex """
-        if marker == '65':
+            self.angle.append(self.ang)
+        
+        if marker == '75':
+            data = self.serialInst.read(5).hex()
+            self.spd = int(data[2:10],16)
+            if int(data[0:2],16) == 1:
+                self.spd = -self.spd
+            print(self.spd)
+            self.speed.popleft()
+            self.speed.append(self.spd)
+
+        if marker == '65': #value in hex
             data = self.serialInst.read(1).hex()
             self.errorNumber = (int(data,16))
-        """ value in hex """
-        if marker == '63':
+
+        if marker == '63': #value in hex
             data = self.serialInst.read(1).hex()
             self.comNumber = (int(data,16))
 

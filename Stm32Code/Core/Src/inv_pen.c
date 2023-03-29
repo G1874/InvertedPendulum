@@ -48,54 +48,78 @@ HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, u
 	return status;
 }
 
-HAL_StatusTypeDef PcSend16bitData(UART_HandleTypeDef* uart , uint16_t* data, uint8_t dataMarker)
+HAL_StatusTypeDef PcSend16bitData(UART_HandleTypeDef* uart , uint16_t data, uint8_t dataMarker)
 {
 	HAL_StatusTypeDef status = HAL_OK;
 
 	uint8_t data8b[3];
 	data8b[0] = dataMarker;
-	data8b[1] = (uint8_t)(*data >> 8);
-	data8b[2] = (uint8_t)(*data);
+	data8b[1] = (uint8_t)(data >> 8);
+	data8b[2] = (uint8_t)(data);
 
 	status = HAL_UART_Transmit(uart, data8b, 3, HAL_MAX_DELAY);
 
 	return status;
 }
 
-HAL_StatusTypeDef PcSend16bitData2(UART_HandleTypeDef* uart, uint16_t* data1, uint16_t* data2, uint8_t dataMarker)
+HAL_StatusTypeDef PcSend16bitData2(UART_HandleTypeDef* uart, uint16_t data1, uint16_t data2, uint8_t dataMarker)
 {
 	HAL_StatusTypeDef status = HAL_OK;
 
 	uint8_t data8b[5];
 	data8b[0] = dataMarker;
-	data8b[1] = (uint8_t)(*data1 >> 8);
-	data8b[2] = (uint8_t)(*data1);
-	data8b[3] = (uint8_t)(*data2 >> 8);
-	data8b[4] = (uint8_t)(*data2);
+	data8b[1] = (uint8_t)(data1 >> 8);
+	data8b[2] = (uint8_t)(data1);
+	data8b[3] = (uint8_t)(data2 >> 8);
+	data8b[4] = (uint8_t)(data2);
 
 	status = HAL_UART_Transmit(uart, data8b, 5, HAL_MAX_DELAY);
 
 	return status;
 }
 
-HAL_StatusTypeDef PcSend32bitData(UART_HandleTypeDef* uart , uint32_t* data, uint8_t dataMarker)
+HAL_StatusTypeDef PcSend32bitData(UART_HandleTypeDef* uart , uint32_t data, uint8_t dataMarker)
 {
 	HAL_StatusTypeDef status = HAL_OK;
 
 	uint8_t data8b[5];
 	data8b[0] = dataMarker;
-	data8b[1] = (uint8_t)(*data >> 24);
-	data8b[2] = (uint8_t)(*data >> 16);
-	data8b[3] = (uint8_t)(*data >> 8);
-	data8b[4] = (uint8_t)(*data);
+	data8b[1] = (uint8_t)(data >> 24);
+	data8b[2] = (uint8_t)(data >> 16);
+	data8b[3] = (uint8_t)(data >> 8);
+	data8b[4] = (uint8_t)(data);
 
 	status = HAL_UART_Transmit(uart, data8b, 5, HAL_MAX_DELAY);
+
+	return status;
+}
+
+HAL_StatusTypeDef PcSend32bitSignedData(UART_HandleTypeDef* uart , int32_t data, uint8_t dataMarker)
+{
+	HAL_StatusTypeDef status = HAL_OK;
+
+	uint8_t data8b[6];
+	uint8_t sign = 0;
+
+	if(data < 0){
+		sign = 1;
+		data = -data;
+	}
+
+	data8b[0] = dataMarker;
+	data8b[1] =	sign;
+	data8b[2] = (uint8_t)(data >> 24);
+	data8b[3] = (uint8_t)(data >> 16);
+	data8b[4] = (uint8_t)(data >> 8);
+	data8b[5] = (uint8_t)(data);
+
+	status = HAL_UART_Transmit(uart, data8b, 6, HAL_MAX_DELAY);
 
 	return status;
 }
 
 uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHandle, TIM_HandleTypeDef* trigTimHandle, GPIO_TypeDef* TrigPort,
-						int16_t TrigPin, uint8_t* direction, uint16_t* freq, uint8_t* flag1, uint8_t* flag2, uint8_t* flag3, GPIO_TypeDef* DirPort,
+						int16_t TrigPin, uint8_t* direction, uint16_t* period, uint8_t* flag1, uint8_t* flag2, uint8_t* flag3, GPIO_TypeDef* DirPort,
 						int16_t DirPin, TIM_HandleTypeDef* pwmTimHandle, uint32_t pwmTimChannel, uint8_t mode)
 {
 	if(timHandle->Instance == trigTimHandle->Instance) {
@@ -105,7 +129,7 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 	if(timHandle->Instance == synchTimHandle->Instance) {
 		if(!*flag3) {
 
-			__HAL_TIM_SET_AUTORELOAD(pwmTimHandle, *freq);
+			__HAL_TIM_SET_AUTORELOAD(pwmTimHandle, *period);
 			HAL_GPIO_WritePin(DirPort, DirPin, *direction);
 
 			if(*flag2) {
@@ -134,14 +158,12 @@ void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* directi
 	if(huart->Instance == USART2) {
 		/* Manual change of stepper motor speed and direction */
 		if(dataIn[0] == 82) {
-			*direction = 1;
 			*flag = 1;
-			*speed = dataIn[1];
+			*speed = (int32_t)dataIn[1];
 			*mode = 2;
 		} else if(dataIn[0] == 76) {
-			*direction = 0;
 			*flag = 1;
-			*speed = dataIn[1];
+			*speed = -(int32_t)dataIn[1];
 			*mode = 2;
 		}
 
@@ -246,7 +268,7 @@ void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* sp
 			u += -LQR_K_MATRIX[i] * x[i] / SCALE_FACTOR;
 		}
 
-		*speed = *speed + u;
+		*speed = *speed + (u * TP * ACC_TO_SPD / 1000);
 
 		*p_angle = x[2];
 
@@ -255,8 +277,17 @@ void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* sp
 	}
 }
 
-void StepperNewPWM(uint8_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag)
+void StepperNewPWM(int32_t speed, uint8_t* direction, uint16_t* period, uint8_t* flag)
 {
-	*freq = speed * 100;
+	int64_t frequency;
+	frequency = speed * STEPS_PER_REVOLUTION * SCALE_FACTOR / 2 / 31415 * RADIUS_FACTOR;
+
+	if(speed >= 0) {
+		*direction = 1;
+		*period = (uint16_t)(frequency);
+	} else if(speed < 0) {
+		*direction = 0;
+		*period = (uint16_t)(-frequency);
+	}
 	*flag = 0;
 }

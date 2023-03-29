@@ -50,7 +50,7 @@
 uint8_t debug1;
 
 uint8_t dataIn[2];
-uint16_t frequency, echo1, echo2, distance ,angle;
+uint16_t period, echo1, echo2, distance ,angle;
 int32_t p_angle, speed;
 uint8_t direction;
 uint8_t flag1,flag2,flag3,flag4,mode;
@@ -151,8 +151,9 @@ int main(void)
 	  if(flag2) {
 		  HCSR04_GetDistance(&echo1, &echo2, &distance);
 		  ControlAlg(distance, angle, &p_angle, &speed, mode);
-		  StepperNewPWM(speed, &direction, &frequency, &flag3);
-		  PcSend16bitData2(&huart2, &distance, &angle, 97);
+		  StepperNewPWM(speed, &direction, &period, &flag3);
+		  PcSend16bitData2(&huart2, distance, angle, 97);
+		  PcSend32bitSignedData(&huart2, speed, 117);
 		  flag2 = 0;
 	  }
 
@@ -214,7 +215,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	error = OverflowProc(htim, &htim6, &htim7, Trig_GPIO_Port, Trig_Pin, &direction, &frequency,
+	error = OverflowProc(htim, &htim6, &htim7, Trig_GPIO_Port, Trig_Pin, &direction, &period,
 							&flag1, &flag4, &flag3, Dir_GPIO_Port, Dir_Pin, &htim2, TIM_CHANNEL_1, mode);
 	if(error!=0) {
 		Error_Handler();
