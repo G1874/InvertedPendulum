@@ -44,18 +44,24 @@ LICENSE:
 
 extern const int32_t LQR_K_MATRIX[4];
 
+/* Scale factor used for fixed point calculations */
 #define SCALE_FACTOR 10000
-#define ACC_TO_SPD 2
 
-#define DISTANCE_NORMALIZATION 20
-#define ANGLE_NORMALIZATION 20
+/* Coefficients derived from physical parameters */
+#define ACC_TO_SPD 2
+#define RADIUS_FACTOR 77
+#define TORQUE_RADIUS 130
+
+/* Coefficients used for sensor reading rescaling */
+#define DISTANCE_NORMALIZATION 23
 
 /* Sample time in ms */
 #define TP 20
 
+/* Select electronic hardware parameters */
 #define MAX_SPEED 10000
 #define STEPS_PER_REVOLUTION 200
-#define RADIUS_FACTOR 77
+#define AS5600_RESOLUTION 4096
 
 /***********************    FUNCTION PROTOTYPES    ***********************/
 
@@ -86,8 +92,9 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag);
 
 /* FUNCTIONS FOR COMPUTING NECESSARY PARAMETERS */
-void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, uint16_t* distance);
-void ControlAlg(uint16_t distance, uint16_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
-void StepperNewPWM(int32_t speed, uint8_t* direction, uint16_t* freq, uint8_t* flag);
+void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, int32_t* distance);
+void AngleRescaling(uint16_t raw_angle, int32_t* angle_deg, int32_t* angle);
+void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
+void StepperNewPWM(int32_t speed, int32_t distance, uint8_t* direction, uint16_t* freq, uint8_t* flag);
 
 #endif /* INV_PEN_H_ */

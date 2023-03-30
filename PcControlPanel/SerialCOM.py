@@ -22,6 +22,7 @@ class SerialCommunication():
         self.scale_factor = 10000
         self.comNumber = 0
         self.errorNumber = 0
+        self.extradata = 0
         self.distance = collections.deque(np.zeros(200))
         self.angle = collections.deque(np.zeros(200))
         self.speed = collections.deque(np.zeros(200))
@@ -79,17 +80,23 @@ class SerialCommunication():
     def handleData(self, communicate):
         marker = communicate.hex()
 
-        if marker == '61': #value in hex
-            data = self.serialInst.read(4).hex()
-            self.dist = int(data[0:4],16)
-            self.ang = int(data[4:8],16)
+        if marker == '64': #value in hex
+            data = self.serialInst.read(5).hex()
+            self.dist = int(data[2:10],16) / self.scale_factor
+            if int(data[0:2],16) == 1:
+                self.dist = -self.dist
             self.distance.popleft()
-            self.angle.popleft()
             self.distance.append(self.dist)
+
+        if marker == '61': #value in hex
+            data = self.serialInst.read(5).hex()
+            self.ang = int(data[2:10],16) / self.scale_factor
+            if int(data[0:2],16) == 1:
+                self.ang = -self.ang
+            self.angle.popleft()
             self.angle.append(self.ang)
-            print(self.ang)
         
-        if marker == '75':
+        if marker == '75': #value in hex
             data = self.serialInst.read(5).hex()
             self.spd = int(data[2:10],16)
             if int(data[0:2],16) == 1:
@@ -104,6 +111,12 @@ class SerialCommunication():
         if marker == '63': #value in hex
             data = self.serialInst.read(1).hex()
             self.comNumber = (int(data,16))
+
+        if marker == '78':
+            data = self.serialInst.read(2).hex()
+            self.extradata = (int(data,16))
+            print(self.extradata)
+
 
     def getPortState(self):
         ports = list_ports.comports()

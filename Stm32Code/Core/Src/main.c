@@ -50,8 +50,8 @@
 uint8_t debug1;
 
 uint8_t dataIn[2];
-uint16_t period, echo1, echo2, distance ,angle;
-int32_t p_angle, speed;
+uint16_t period, echo1, echo2, raw_angle;
+int32_t angle, deg_angle, p_angle, distance, speed;
 uint8_t direction;
 uint8_t flag1,flag2,flag3,flag4,mode;
 uint8_t error;
@@ -97,12 +97,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_TIM7_Init();
-  MX_TIM10_Init();
-  MX_TIM11_Init();
   MX_I2C2_Init();
-  MX_TIM6_Init();
+  MX_TIM10_Init();
+  MX_TIM7_Init();
+  MX_TIM11_Init();
   MX_TIM2_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
 	  /* Initialization Start */
@@ -123,6 +123,7 @@ int main(void)
 	  flag2 = 0;
 	  flag3 = 0;
 	  flag4 = 0;
+	  mode = 0;
 
 	  speed = 0;
 	  angle = 0;
@@ -141,7 +142,7 @@ int main(void)
 		  if(error!=0) {
 			  Error_Handler();
 		  }
-		  if(AS5600_GetRawAngle(as, &angle) != HAL_OK) {
+		  if(AS5600_GetRawAngle(as, &raw_angle) != HAL_OK) {
 			  error = 17;
 		  	  Error_Handler();
 		  }
@@ -150,10 +151,13 @@ int main(void)
 
 	  if(flag2) {
 		  HCSR04_GetDistance(&echo1, &echo2, &distance);
+		  AngleRescaling(raw_angle, &deg_angle, &angle);
 		  ControlAlg(distance, angle, &p_angle, &speed, mode);
-		  StepperNewPWM(speed, &direction, &period, &flag3);
-		  PcSend16bitData2(&huart2, distance, angle, 97);
+		  StepperNewPWM(speed, distance, &direction, &period, &flag3);
+		  PcSend32bitSignedData(&huart2, deg_angle, 97);
+		  PcSend32bitSignedData(&huart2, distance, 100);
 		  PcSend32bitSignedData(&huart2, speed, 117);
+		  PcSend16bitData(&huart2, period, 120);
 		  flag2 = 0;
 	  }
 

@@ -108,10 +108,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=1)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=29)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=1)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=29)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -189,8 +189,8 @@ class Gui():
         self.a.plot(self.serialcom.distance)
         self.b.plot(self.serialcom.angle)
 
-        self.a.set_ylim(ymin=0,ymax=45)
-        self.b.set_ylim(ymin=0,ymax=4095)
+        self.a.set_ylim(ymin=-0.21,ymax=0.21)
+        self.b.set_ylim(ymin=-180,ymax=180)
 
     def animateSpeed(self,i):
         self.c.clear()

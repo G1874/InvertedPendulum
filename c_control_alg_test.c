@@ -8,12 +8,11 @@ const int32_t LQR_K_MATRIX[4] = {-31623,-24031,
 #define SCALE_FACTOR 10000
 
 /* Coefficients derived from physical parameters */
-#define ACC_TO_SPD 2500 // Times SCALE_FACTOR
+#define ACC_TO_SPD 25000 // Times SCALE_FACTOR
 #define RADIUS_FACTOR 77
 
 /* Coefficients used for sensor reading rescaling */
 #define DISTANCE_NORMALIZATION 20
-#define ANGLE_NORMALIZATION 20
 
 /* Sample time in ms */
 #define TP 20
@@ -42,13 +41,12 @@ double ControlAlgFlt(double* x,double* K,double* r)
     return u;
 }
 
-void ControlAlg(uint16_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
+void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
 {
 	if(mode == 1) {
-        char buffer[64];
 		int64_t u = 0;
 		int64_t x[4];
-		x[0] = (distance - DISTANCE_NORMALIZATION) * (SCALE_FACTOR / 100); // distance in meters times SCALE_FACTOR
+		x[0] = distance;                                                   // distance in meters times SCALE_FACTOR
 		x[1] = *speed;                                                     // previous speed
 		x[2] = angle;                                                      // angle in radians times SCALE_FACTOR
 		x[3] = (angle - *p_angle) * 1000 / TP;                             // angular speed in radians/second times SCALE_FACTOR
@@ -57,42 +55,74 @@ void ControlAlg(uint16_t distance, int32_t angle, int32_t* p_angle, int32_t* spe
 		    u += -LQR_K_MATRIX[i] * x[i] / SCALE_FACTOR;
 		}
 
-        sprintf(buffer,"%lld\n",u);
-        printf(buffer);
-        /* sprintf(buffer,"%lld\n",x[0]);
-        printf(buffer);
-        sprintf(buffer,"%lld\n",x[1]);
-        printf(buffer);
-        sprintf(buffer,"%lld\n",x[2]);
-        printf(buffer);
-        sprintf(buffer,"%lld\n",x[3]);
-        printf(buffer); */
-        
-        int64_t a = u * ACC_TO_SPD * TP /1000;
-
-        sprintf(buffer,"%lld\n",a);
-        printf(buffer);
-
-		*speed = *speed + u;
-		*p_angle = x[2];
+		*speed = *speed + u * ACC_TO_SPD * TP / 1000 / SCALE_FACTOR;
+		*p_angle = angle;
 	} else {
-		*p_angle = (angle - ANGLE_NORMALIZATION) * 31415 / 180;
+		*p_angle = angle;
 	}
+}
+
+void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, int32_t* distance)
+{
+	*distance = ((*FechoTime - *RechoTime) / 58 - DISTANCE_NORMALIZATION) * (SCALE_FACTOR / 100);
+}
+
+void AngleRescalingFlt(uint16_t raw_angle, double* angle_deg, double* angle)
+{
+    *angle_deg = (360.0 / (AS5600_RESOLUTION - 1) * raw_angle) - 180;
+    *angle = *angle_deg * 3.1415 / 180;
+}
+
+void AngleRescaling(uint16_t raw_angle, int32_t* angle_deg, int32_t* angle)
+{
+    *angle_deg = (36 * (raw_angle * 10 * SCALE_FACTOR / (AS5600_RESOLUTION - 1))) - 180 * SCALE_FACTOR;
+    *angle = *angle_deg / 180 * 31415 / SCALE_FACTOR;
+}
+
+void StepperNewPWM(int32_t speed, uint8_t* direction, uint16_t* period)
+{
+	int64_t p;
+    p = 2 * 31415 * 130 / speed * 100 / STEPS_PER_REVOLUTION;
+
+    *period = p;
+
+    char buffer[64];
+    sprintf(buffer,"%lld\n",*period);
+    printf(buffer);
+}
+
+void StepperNewPWMFlt(double speed, double* period)
+{
+	double p;
+	p = 2 * 3.1415 * 0.013 / speed / STEPS_PER_REVOLUTION;
+
+    char buffer[64];
+    sprintf(buffer,"%f\n",p);
+    printf(buffer);
 }
 
 int main()
 {
-    int32_t speed = 0;
-    uint16_t distance = 15;
-    int32_t angle = 6981;
-    int32_t p_angle = 8726;
+    int32_t speed = 2000;
+    int32_t distance = 0;
+    uint16_t raw_angle = 2047;
+    int32_t angle = 0;
+    double angleFlt = 0;
+    int32_t d_angle = 0;
+    double d_angleFlt = 0;
+    int32_t p_angle = 2000;
     uint8_t mode = 1;
+    uint8_t direction;
+    uint16_t period;
+    double speedFlt = 5;
+    double periodFlt;
 
-    ControlAlg(distance,angle,&p_angle,&speed,mode);
+    StepperNewPWMFlt(speedFlt, &periodFlt);
+    StepperNewPWM(speed, &direction, &period);
 
-    /* char buffer[64];
-    sprintf(buffer,"%d\n",speed);
-    printf(buffer); */
+    /* AngleRescaling(raw_angle, &d_angle, &angle);
+
+    ControlAlg(distance,angle,&p_angle,&speed,mode); */
     
     return 0;
 }
