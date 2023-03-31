@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-const int32_t LQR_K_MATRIX[4] = {-31623,-24031,
-                                -952478,-206440}; // Times SCALE_FACTOR
+const int32_t LQR_K_MATRIX[4] = {-248761,-1579388,
+                                -4926922,-1099123}; // Times SCALE_FACTOR
 
 /* Scale factor used for fixed point calculations */
 #define SCALE_FACTOR 10000
@@ -41,25 +41,25 @@ double ControlAlgFlt(double* x,double* K,double* r)
     return u;
 }
 
-void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
+void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed)
 {
-	if(mode == 1) {
-		int64_t u = 0;
-		int64_t x[4];
-		x[0] = distance;                                                   // distance in meters times SCALE_FACTOR
-		x[1] = *speed;                                                     // previous speed
-		x[2] = angle;                                                      // angle in radians times SCALE_FACTOR
-		x[3] = (angle - *p_angle) * 1000 / TP;                             // angular speed in radians/second times SCALE_FACTOR
+	int64_t u = 0;
+	int64_t x[4];
+	x[0] = distance;                                                   // distance in meters times SCALE_FACTOR
+	x[1] = *speed;                                                     // previous speed
+	x[2] = angle;                                                      // angle in radians times SCALE_FACTOR
+	x[3] = (angle - *p_angle) * 1000 / TP;                             // angular speed in radians/second times SCALE_FACTOR
 
-		for(int i=0;i<4;i++) {
-		    u += -LQR_K_MATRIX[i] * x[i] / SCALE_FACTOR;
-		}
-
-		*speed = *speed + u * ACC_TO_SPD * TP / 1000 / SCALE_FACTOR;
-		*p_angle = angle;
-	} else {
-		*p_angle = angle;
+	for(int i=0;i<4;i++) {
+	    u += -LQR_K_MATRIX[i] * x[i] / SCALE_FACTOR;
 	}
+
+    char buffer[64];
+    sprintf(buffer,"%lld\n",u);
+    printf(buffer);
+
+	*speed = *speed + u * ACC_TO_SPD * TP / 1000 / SCALE_FACTOR;
+	*p_angle = angle;
 }
 
 void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, int32_t* distance)
@@ -103,26 +103,15 @@ void StepperNewPWMFlt(double speed, double* period)
 
 int main()
 {
-    int32_t speed = 2000;
-    int32_t distance = 0;
-    uint16_t raw_angle = 2047;
-    int32_t angle = 0;
-    double angleFlt = 0;
-    int32_t d_angle = 0;
-    double d_angleFlt = 0;
-    int32_t p_angle = 2000;
-    uint8_t mode = 1;
-    uint8_t direction;
-    uint16_t period;
-    double speedFlt = 5;
-    double periodFlt;
+    uint16_t raw_angle = 2100;
+    int32_t distance = -500;
+    int32_t speed = 0;
+    int32_t d_angle;
+    int32_t angle;
+    int32_t p_angle = 1000;
 
-    StepperNewPWMFlt(speedFlt, &periodFlt);
-    StepperNewPWM(speed, &direction, &period);
-
-    /* AngleRescaling(raw_angle, &d_angle, &angle);
-
-    ControlAlg(distance,angle,&p_angle,&speed,mode); */
+    AngleRescaling(raw_angle, &d_angle, &angle);
+    ControlAlg(distance,angle,&p_angle,&speed);
     
     return 0;
 }

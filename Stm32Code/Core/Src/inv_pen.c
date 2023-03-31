@@ -34,7 +34,7 @@ LICENSE:
 
 #include "inv_pen.h"
 
-const int32_t LQR_K_MATRIX[4] = {-100000,-120427,-598.4278,-1639194};
+const int32_t LQR_K_MATRIX[4] = {-248761,-1579388,-4926922,-1099123};
 
 HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, uint8_t dataMarker)
 {
@@ -44,6 +44,19 @@ HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, u
 	data8b[1] = errNum;
 
 	status = HAL_UART_Transmit(uart, data8b, 2, HAL_MAX_DELAY);
+
+	return status;
+}
+
+HAL_StatusTypeDef PcSend8bitData(UART_HandleTypeDef* uart , uint8_t data, uint8_t dataMarker)
+{
+	HAL_StatusTypeDef status = HAL_OK;
+
+	uint8_t data8b[3];
+	data8b[0] = dataMarker;
+	data8b[1] = (uint8_t)(data);
+
+	status = HAL_UART_Transmit(uart, data8b, 3, HAL_MAX_DELAY);
 
 	return status;
 }
@@ -153,7 +166,7 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 	return 0;
 }
 
-void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag)
+void RxCallbackProc(UART_HandleTypeDef* huart, AS5600_TypeDef* dev, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag)
 {
 	if(huart->Instance == USART2) {
 		/* Manual change of stepper motor speed and direction */
@@ -167,25 +180,56 @@ void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* directi
 			*mode = 2;
 		}
 
-		/* Mode change */
-		if(dataIn[0] == 65) {
-			*mode = 2;
-			PcSendErrorMessage(huart, 4, 99);
-		} else if(dataIn[0] == 77) {
-			*mode = 1;
-			*flag = 1;
-			PcSendErrorMessage(huart, 5, 99);
-		} else if(dataIn[0] == 83) {
-			*mode = 0;
-			*flag = 1;
-		} else if(dataIn[0] == 72) {
-			*mode = 3;
-			*flag = 1;
-			PcSendErrorMessage(huart, 6, 99);
-		}
+		uint8_t as5600_data;
+		uint16_t as5600_angle;
 
-		/* AS5600 magnetic encoder state report */
-		//TODO
+		switch(dataIn[0]) {
+			/* Mode change */
+			case 65:
+				*mode = 2;
+				PcSendErrorMessage(huart, 4, 99);
+				break;
+			case 77:
+				*mode = 1;
+				*flag = 1;
+				PcSendErrorMessage(huart, 5, 99);
+				break;
+			case 83:
+				*mode = 0;
+				*flag = 1;
+				break;
+			case 72:
+				*mode = 3;
+				*flag = 1;
+				PcSendErrorMessage(huart, 6, 99);
+				break;
+			/* AS5600 magnetic encoder state report */
+			case 84:
+				if(AS5600_GetMagnetStatus(dev, &as5600_data) == HAL_OK) {
+					PcSendErrorMessage(huart, 9, 99);
+					PcSend8bitData(huart, as5600_data, 115);
+				} else {
+					PcSendErrorMessage(huart, 17, 101);
+				}
+				break;
+			case 71:
+				if(AS5600_GetAGCSetting(dev, &as5600_data) == HAL_OK) {
+					PcSendErrorMessage(huart, 10, 99);
+					PcSend8bitData(huart, as5600_data, 115);
+				} else {
+					PcSendErrorMessage(huart, 17, 101);
+				}
+				break;
+			/* Set AS5600 magnetic encoder zero position */
+			case 90:
+				AS5600_GetRawAngle(dev, &as5600_angle);
+				if(AS5600_SetStartPosition(dev, as5600_angle) == HAL_OK) {
+					PcSendErrorMessage(huart, 11, 99);
+				} else {
+					PcSendErrorMessage(huart, 8, 101);
+				}
+				break;
+		}
 
 		HAL_UART_Receive_IT(huart, dataIn, 2);
 	}

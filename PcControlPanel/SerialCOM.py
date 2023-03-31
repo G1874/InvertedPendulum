@@ -20,9 +20,10 @@ class SerialCommunication():
         self.ang = 0
         self.spd = 0
         self.scale_factor = 10000
-        self.comNumber = 0
-        self.errorNumber = 0
-        self.extradata = 0
+        self.com_number = 0
+        self.error_number = 0
+        self.extra_data = 0
+        self.register_data = 0;
         self.distance = collections.deque(np.zeros(200))
         self.angle = collections.deque(np.zeros(200))
         self.speed = collections.deque(np.zeros(200))
@@ -62,7 +63,7 @@ class SerialCommunication():
                 self.distance = collections.deque(np.zeros(200))
                 self.angle = collections.deque(np.zeros(200))
                 self.speed = collections.deque(np.zeros(200))
-                self.comNumber = 3
+                self.com_number = 3
                 while not self.stp:
                     if self.serialInst.in_waiting > 0:
                         communicate = self.serialInst.read(1)
@@ -75,7 +76,7 @@ class SerialCommunication():
         if self.serialInst is not None:
             if self.serialInst.is_open:
                 self.serialInst.close()
-                self.comNumber = 2
+                self.com_number = 2
 
     def handleData(self, communicate):
         marker = communicate.hex()
@@ -106,17 +107,22 @@ class SerialCommunication():
 
         if marker == '65': #value in hex
             data = self.serialInst.read(1).hex()
-            self.errorNumber = (int(data,16))
+            self.error_number = int(data,16)
 
         if marker == '63': #value in hex
             data = self.serialInst.read(1).hex()
-            self.comNumber = (int(data,16))
+            com_number = int(data,16)
+            
+            if com_number == 9 or com_number == 10:
+                data = self.serialInst.read(2).hex()
+                if int(data[0:2],16) == 115:
+                    self.register_data = int(data[2:4],16)
 
+            self.com_number = com_number
+            
         if marker == '78':
             data = self.serialInst.read(2).hex()
-            self.extradata = (int(data,16))
-            print(self.extradata)
-
+            self.extra_data = int(data,16)
 
     def getPortState(self):
         ports = list_ports.comports()

@@ -39,6 +39,7 @@ LICENSE:
 #define INV_PEN_H_
 
 #include "stm32l1xx_hal.h"
+#include "as5600.h"
 
 /***********************	CONSTANTS & MACROS	   ***********************/
 
@@ -67,6 +68,7 @@ extern const int32_t LQR_K_MATRIX[4];
 
 /* FUNCTIONS FOR COMMUNICATION WITH PC SIDE PYTHON GUI */
 HAL_StatusTypeDef PcSendErrorMessage(UART_HandleTypeDef* uart, uint8_t errNum, uint8_t dataMarker);
+HAL_StatusTypeDef PcSend8bitData(UART_HandleTypeDef* uart , uint8_t data, uint8_t dataMarker);
 HAL_StatusTypeDef PcSend16bitData(UART_HandleTypeDef* uart, uint16_t data, uint8_t dataMarker);
 HAL_StatusTypeDef PcSend16bitData2(UART_HandleTypeDef* uart, uint16_t data1, uint16_t data2, uint8_t dataMarker);
 HAL_StatusTypeDef PcSend32bitData(UART_HandleTypeDef* uart ,uint32_t data, uint8_t dataMarker);
@@ -89,7 +91,7 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 						int16_t DirPin, TIM_HandleTypeDef* pwmTimHandle, uint32_t pwmTimChannel, uint8_t mode);
 
 /* UART RX INTERUPT PROCEDURE */
-void RxCallbackProc(UART_HandleTypeDef* huart, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag);
+void RxCallbackProc(UART_HandleTypeDef* huart, AS5600_TypeDef* dev, uint8_t* dataIn, uint8_t* direction, int32_t* speed, uint8_t* mode, uint8_t* flag);
 
 /* FUNCTIONS FOR COMPUTING NECESSARY PARAMETERS */
 void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, int32_t* distance);

@@ -25,6 +25,8 @@ class Gui():
         self.createSerialInstance()
         self.defineLabels()
         self.defineGraph()
+        self.defineAngleReading()
+        self.defineDistanceReading()
         self.anim = animation.FuncAnimation(fig=self.fig,func=self.animate,frames=10)
         self.defineControls()
         self.defineTextBox()
@@ -38,16 +40,16 @@ class Gui():
 
     def defineControls(self):
         quitButton = Button(master=self.root,text='Quit',font=('sans-serif',13),command=self.quitApp)
-        quitButton.place(x=1484,y=820)
+        quitButton.place(x=1481,y=820)
 
         frm = Frame(master=self.root)
-        frm.place(x=1200, y=525)
+        frm.place(x=1196, y=525)
         frm.configure(background='#3D5A80')
 
         Button(master=frm,text='Start Receiving',font=('sans-serif',13),command=self.startReceiving).grid(row=0,column=0)
         Button(master=frm,text='Stop Receiving',font=('sans-serif',13),command=self.stopReceiving).grid(row=0,column=1)
         Button(master=frm,text='Automatic Control',font=('sans-serif',13),command=self.automaticMode).grid(row=1,column=1)
-        Button(master=frm,text='Stop motor',font=('sans-serif',13),command=self.StopMotor).grid(row=2,column=1)
+        Button(master=frm,text='Stop motor',font=('sans-serif',13),command=self.stopMotor).grid(row=2,column=1)
         self.manControlButton = Button(master=frm,text='Manual Control',font=('sans-serif',13),command=self.manualControl)
         self.manControlButton.grid(row=1,column=0)
 
@@ -57,7 +59,7 @@ class Gui():
         Pause = Button(master=self.root,text='Pause',padx=15,font=('sans-serif',8),command=self.toggleAnimationPause)
         Pause.place(x=1104,y=90)
 
-        clearText = Button(master=self.root,text='Clear',padx=15,font=('sans-serif',8),command=self.clearTextBox)
+        clearText = Button(master=self.root,text='Clear',padx=15,font=('sans-serif',8),command=self.clearTextBoxes)
         clearText.place(x=1440,y=450)
 
         im = ImageTk.PhotoImage(Image.open(r'.\images\three_dots_icon_159804.ico').
@@ -76,6 +78,7 @@ class Gui():
         self.top2.title('Manual Control')
         self.top2.iconbitmap(".\images\stop_player_multimedia_control_icon_232870.ico")
         self.top2.configure(background='#3D5A80')
+        self.top2.wm_attributes("-topmost", 1)
         self.top2.protocol("WM_DELETE_WINDOW",self.closeManControlWindow)
 
         im1 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Left-Circular.ico').
@@ -116,8 +119,17 @@ class Gui():
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
 
-    def StopMotor(self):
+    def stopMotor(self):
         self.serialcom.sendInstruction(instructionNrr=72)
+
+    def zeroAS5600Position(self):
+        self.serialcom.sendInstruction(instructionNrr=90)
+
+    def getAGCregister(self):
+        self.serialcom.sendInstruction(instructionNrr=71)
+
+    def getMagnetStatus(self):
+        self.serialcom.sendInstruction(instructionNrr=84)
 
     def aditionalOptionsWindow(self):
         self.misc.configure(state="disabled")
@@ -126,6 +138,7 @@ class Gui():
         self.top1.title('Aditional Options')
         self.top1.iconbitmap("images\stop_player_multimedia_control_icon_232870.ico")
         self.top1.configure(background='#3D5A80')
+        self.top1.wm_attributes("-topmost", 1)
         self.top1.protocol("WM_DELETE_WINDOW",self.closeAdditionalWindow)
 
         self.defineAdditionalGraph(window=self.top1)
@@ -135,14 +148,13 @@ class Gui():
         frm.grid(row=1,column=0)
         frm.configure(background='#3D5A80')
 
-        Button(master=frm,text='Set AS5600 zero position',font=('sans-serif',13)).grid(row=1,column=0)
-        Button(master=frm,text='Get AS5600 agc register',font=('sans-serif',13)).grid(row=1,column=1)
-        Button(master=frm,text='Get AS5600 magnet status',font=('sans-serif',13)).grid(row=1,column=2)
+        Button(master=frm,text='Set AS5600 zero position',font=('sans-serif',13),command=self.zeroAS5600Position).grid(row=1,column=0)
+        Button(master=frm,text='Get AS5600 agc register',font=('sans-serif',13),command=self.getAGCregister).grid(row=1,column=1)
+        Button(master=frm,text='Get AS5600 magnet status',font=('sans-serif',13),command=self.getMagnetStatus).grid(row=1,column=2)
         Checkbutton(master=frm,text='Save to csv file',font=('sans-serif',13),variable=self.save_to_file).grid(row=1,column=3)
 
         for widget in frm.winfo_children():
             widget.grid(padx=20,pady=10,sticky='w')
-
 
     def closeAdditionalWindow(self):
         self.misc.configure(state="normal")
@@ -182,6 +194,24 @@ class Gui():
 
         canvas.get_tk_widget().pack()
 
+    def defineDistanceReading(self):
+        self.textDist = Text(master=self.root,height=17,width=10,background='#293241',fg='#E0FBFC')
+        self.textDist.configure(state='disabled')
+        self.textDist.place(x=15,y=120)
+
+    def defineAngleReading(self):
+        self.textAng = Text(master=self.root,height=17,width=10,background='#293241',fg='#E0FBFC')
+        self.textAng.configure(state='disabled')
+        self.textAng.place(x=15,y=457)
+
+    def writeReadingData(self):
+        self.textDist.configure(state='normal')
+        self.textAng.configure(state='normal')
+        self.textDist.insert(1.0, str(self.serialcom.dist) + '\n')
+        self.textAng.insert(1.0, str(self.serialcom.ang) + '\n')
+        self.textDist.configure(state='disabled')
+        self.textAng.configure(state='disabled')
+
     def animate(self,i):
         self.a.clear()
         self.b.clear()
@@ -191,6 +221,8 @@ class Gui():
 
         self.a.set_ylim(ymin=-0.21,ymax=0.21)
         self.b.set_ylim(ymin=-180,ymax=180)
+
+        self.writeReadingData()
 
     def animateSpeed(self,i):
         self.c.clear()
@@ -206,9 +238,9 @@ class Gui():
             self.paused = True
 
     def defineTextBox(self):
-        self.text = Text(master=self.root,height=20,width=32,background='#293241',fg='#E0FBFC')
+        self.text = Text(master=self.root,height=20,width=35,background='#293241',fg='#E0FBFC')
         self.text.configure(state='disabled')
-        self.text.place(x=1250,y=120)
+        self.text.place(x=1238,y=120)
         self.text.tag_config('error',foreground="#EE6C4D")
         self.errorDict = {
             1 : "error: AS5600 - Invalid low power mode specified",
@@ -218,8 +250,8 @@ class Gui():
             5 : "error: AS5600 - Invalid slow filter mode specified",
             6 : "error: AS5600 - Invalid fast filter mode specified",
             7 : "error: AS5600 - Invalid watchdog state specified",
-            8 : "error: AS5600 - I2C write register error",
-            9 : "error: AS5600 - I2C magnet status read error",
+            8 : "error: AS5600 - I2C Write register error",
+            9 : "error: AS5600 - I2C Magnet status read error",
             10 : "error: AS5600 - Magnet not detected",
             11 : "error: AS5600 - B-field is too strong",
             12 : "error: AS5600 - B-field is too weak",
@@ -239,7 +271,10 @@ class Gui():
             5 : "Automatic control mode",
             6 : "Stopped",
             7 : "Right",
-            8 : "Left"
+            8 : "Left",
+            9 : "AS5600 Magnet status: ",
+            10 : "AS5600 AGC register: ",
+            11 : "AS5600 position zeroed"
         }
         t2 = threading.Thread(target=self.updateTextBox,daemon=True)
         t2.start()
@@ -249,7 +284,7 @@ class Gui():
         self.text.insert(1.0, text + '\n',tag)
         self.text.configure(state='disabled')
 
-    def clearTextBox(self):
+    def clearTextBoxes(self):
         self.text.configure(state='normal')
         self.text.delete(1.0,END)
         self.text.configure(state='disabled')
@@ -275,10 +310,25 @@ class Gui():
 
     def updateTextBox(self):
         while True:
-            if self.serialcom.errorNumber != 0:
-                self.writeToTextBox(self.errorDict[self.serialcom.errorNumber],'error')
-                self.serialcom.errorNumber = 0
-            if self.serialcom.comNumber != 0:
-                self.writeToTextBox(self.comDict[self.serialcom.comNumber])
-                self.serialcom.comNumber = 0
+            if self.serialcom.error_number != 0:
+                self.writeToTextBox(self.errorDict[self.serialcom.error_number],'error')
+                self.serialcom.error_number = 0
+            if self.serialcom.com_number != 0:
+                if self.serialcom.com_number == 10:
+                    self.writeToTextBox(self.comDict[self.serialcom.com_number] + str(self.serialcom.register_data))
+                elif self.serialcom.com_number == 9:
+                    match self.serialcom.register_data:
+                        case 16:
+                            self.writeToTextBox(self.comDict[self.serialcom.com_number] + "Magnet not detected")
+                        case 24:
+                            self.writeToTextBox(self.comDict[self.serialcom.com_number] + "Magnet too weak")
+                        case 40:
+                            self.writeToTextBox(self.comDict[self.serialcom.com_number] + "Magnet too strong")
+                        case 32:
+                            self.writeToTextBox(self.comDict[self.serialcom.com_number] + "Magnet OK")
+                        case _:
+                            self.writeToTextBox(self.comDict[self.serialcom.com_number] + "Invalid register value")
+                else:
+                    self.writeToTextBox(self.comDict[self.serialcom.com_number])
+                self.serialcom.com_number = 0
             time.sleep(0.5)

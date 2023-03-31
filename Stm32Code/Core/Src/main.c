@@ -49,6 +49,8 @@
 /* USER CODE BEGIN PV */
 uint8_t debug1;
 
+AS5600_TypeDef* as;
+
 uint8_t dataIn[2];
 uint16_t period, echo1, echo2, raw_angle;
 int32_t angle, deg_angle, p_angle, distance, speed;
@@ -106,7 +108,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 	  /* Initialization Start */
-	  AS5600_TypeDef* as = AS5600_New();
+  	  as = AS5600_New();
 
 	  error = AS5600_Init(as, &hi2c2);
 	  if(error!=0) {
@@ -142,7 +144,7 @@ int main(void)
 		  if(error!=0) {
 			  Error_Handler();
 		  }
-		  if(AS5600_GetRawAngle(as, &raw_angle) != HAL_OK) {
+		  if(AS5600_GetAngle(as, &raw_angle) != HAL_OK) {
 			  error = 17;
 		  	  Error_Handler();
 		  }
@@ -215,7 +217,7 @@ void SystemClock_Config(void)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	RxCallbackProc(huart, dataIn, &direction, &speed, &mode, &flag4);
+	RxCallbackProc(huart, as, dataIn, &direction, &speed, &mode, &flag4);
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
