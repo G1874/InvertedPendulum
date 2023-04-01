@@ -22,3 +22,5 @@ Startup/
 *.cproject
 
 output/
+ControllerDesign/control_agl_test.asv
+ControllerDesign/control_agl_test.m

@@ -59,15 +59,15 @@ class SerialCommunication():
         if self.serialInst is not None:
             if not self.serialInst.is_open:
                 self.serialInst.open()
-                self.stp = False
-                self.distance = collections.deque(np.zeros(200))
-                self.angle = collections.deque(np.zeros(200))
-                self.speed = collections.deque(np.zeros(200))
-                self.com_number = 3
-                while not self.stp:
-                    if self.serialInst.in_waiting > 0:
-                        communicate = self.serialInst.read(1)
-                        self.handleData(communicate)
+            self.stp = False
+            self.distance = collections.deque(np.zeros(200))
+            self.angle = collections.deque(np.zeros(200))
+            self.speed = collections.deque(np.zeros(200))
+            self.com_number = 3
+            while not self.stp:
+                if self.serialInst.in_waiting > 0:
+                    communicate = self.serialInst.read(1)
+                    self.handleData(communicate)
         else:
             print('error: serial instance does not exist')
 

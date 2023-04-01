@@ -60,6 +60,8 @@ extern const int32_t LQR_K_MATRIX[4];
 #define TP 20
 
 /* Select electronic hardware parameters */
+#define MAX_TIMER_PERIOD 65535
+#define MIN_TIMER_PERIOD 799
 #define MAX_SPEED 10000
 #define STEPS_PER_REVOLUTION 200
 #define AS5600_RESOLUTION 4096

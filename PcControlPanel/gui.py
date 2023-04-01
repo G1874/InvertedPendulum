@@ -80,26 +80,27 @@ class Gui():
         self.top2.configure(background='#3D5A80')
         self.top2.wm_attributes("-topmost", 1)
         self.top2.protocol("WM_DELETE_WINDOW",self.closeManControlWindow)
+        #self.top2.grid_rowconfigure(1,weight=1)
 
         im1 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Left-Circular.ico').
-                                resize((25,25),Image.ANTIALIAS))
+                                resize((30,30),Image.ANTIALIAS))
         im2 = ImageTk.PhotoImage(Image.open(r'.\images\Icons8-Windows-8-Arrows-Right-Circular.ico').
-                                resize((25,25),Image.ANTIALIAS))
+                                resize((30,30),Image.ANTIALIAS))
 
         leftButton = Button(master=self.top2,text='Quit',font=('sans-serif',13),image=im1)
         rightButton = Button(master=self.top2,text='Quit',font=('sans-serif',13),image=im2)
 
+        leftButton.im1 = im1
+        rightButton.im2 = im2
+
         leftButton.grid(row=0,column=0)
-        rightButton.grid(row=0,column=2)
+        rightButton.grid(row=0,column=1)
 
         leftButton.bind("<ButtonPress>", self.leftInstr)
         leftButton.bind("<ButtonRelease>", self.pauseMotor)
 
         rightButton.bind("<ButtonPress>", self.rightInstr)
         rightButton.bind("<ButtonRelease>", self.pauseMotor)
-
-        leftButton.im1 = im1
-        rightButton.im2 = im2
 
         for widget in self.top2.winfo_children():
             widget.grid(padx=20,pady=10)
@@ -111,10 +112,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=29)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=60)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=29)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=60)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -143,6 +144,10 @@ class Gui():
 
         self.defineAdditionalGraph(window=self.top1)
         self.anim2 = animation.FuncAnimation(fig=self.fig2,func=self.animateSpeed,frames=10)
+        self.defineExtraReading()
+
+        for widget in self.top1.winfo_children():
+            widget.grid(padx=10)
 
         frm = Frame(master=self.top1)
         frm.grid(row=1,column=0)
@@ -185,7 +190,7 @@ class Gui():
 
         plt.style.use("serious_style")
 
-        self.fig2 = Figure(figsize=(10,3), dpi=100)
+        self.fig2 = Figure(figsize=(9,3), dpi=100)
         self.c = self.fig2.add_subplot(111)
 
         canvas = FigureCanvasTkAgg(figure=self.fig2,master=frm)
@@ -204,6 +209,11 @@ class Gui():
         self.textAng.configure(state='disabled')
         self.textAng.place(x=15,y=457)
 
+    def defineExtraReading(self):
+        self.textExtr = Text(master=self.top1,height=17,width=11,background='#293241',fg='#E0FBFC')
+        self.textExtr.configure(state='disabled')
+        self.textExtr.grid(row=0,column=1)
+
     def writeReadingData(self):
         self.textDist.configure(state='normal')
         self.textAng.configure(state='normal')
@@ -211,6 +221,12 @@ class Gui():
         self.textAng.insert(1.0, str(self.serialcom.ang) + '\n')
         self.textDist.configure(state='disabled')
         self.textAng.configure(state='disabled')
+
+    
+    def writeExtraReadingData(self):
+        self.textExtr.configure(state='normal')
+        self.textExtr.insert(1.0, str(self.serialcom.spd) + ' - ' + str(self.serialcom.extra_data) + '\n')
+        self.textExtr.configure(state='disabled')
 
     def animate(self,i):
         self.a.clear()
@@ -227,6 +243,8 @@ class Gui():
     def animateSpeed(self,i):
         self.c.clear()
         self.c.plot(self.serialcom.speed)
+
+        self.writeExtraReadingData()
         #self.c.set_ylim(ymin=0,ymax=100000)
 
     def toggleAnimationPause(self):
