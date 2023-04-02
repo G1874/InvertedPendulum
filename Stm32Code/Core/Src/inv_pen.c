@@ -36,7 +36,7 @@ LICENSE:
 
 /*******************  CONSTANTS & GLOBAL VARIABLES  ********************/
 
-const int32_t LQR_K_MATRIX[4] = {-248761,-157939,-4926922,-1099123};
+const int32_t LQR_K_MATRIX[4] = {-6723,-20395,-98249,-32525};
 
 /*******************    FUNCTION IMPLEMENTATIONS    ********************/
 
@@ -189,11 +189,12 @@ void RxCallbackProc(UART_HandleTypeDef* huart, AS5600_TypeDef* dev, uint8_t* dat
 
 		switch(dataIn[0]) {
 			/* Mode change */
-			case 65:	// Automatic control
+			case 65:	// Manual control
 				*mode = 2;
 				PcSendErrorMessage(huart, 4, 99);
 				break;
-			case 77:	// Manual control
+			case 77:	// Automatic control
+				*speed = 0;
 				*mode = 1;
 				*flag = 1;
 				PcSendErrorMessage(huart, 5, 99);
@@ -300,7 +301,7 @@ void AngleRescaling(uint16_t raw_angle, int32_t* angle_deg, int32_t* angle)
 	*angle = (int32_t)(-a * 31415 / 180 / SCALE_FACTOR);
 }
 
-void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
+void ControlAlg(int32_t distance, int32_t* p_distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode)
 {
 	if(mode == 1) {
 		/* LQR control algorithm */
@@ -332,47 +333,54 @@ void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* spee
 
 		if(*speed > MAX_SPEED) {
 			*speed = MAX_SPEED;
+		} else if(*speed < -MAX_SPEED) {
+			*speed = -MAX_SPEED;
 		}
 
 		*p_angle = angle;
+		*p_distance = distance;
 
 	} else {
 		*p_angle = angle;
+		*p_distance = distance;
 	}
 }
 
 void StepperNewPWM(int32_t speed, int32_t distance, uint8_t* direction, uint16_t* period, uint8_t* flag)
 {
 	int64_t p;
-	p = 2 * 31415 * TORQUE_RADIUS * 100 / (int64_t)speed / STEPS_PER_REVOLUTION;
+	if(speed != 0){
+		p = 2 * 31415 * TORQUE_RADIUS * 100 / (int64_t)speed / STEPS_PER_REVOLUTION;
+	} else {
+	    p = MAX_TIMER_PERIOD + 1;
+	}
 
 	if(p > 0) {
 		*direction = 1;
-		if(p > MAX_TIMER_PERIOD) {
-			*period = 0;
-		} else {
-			*period = (uint16_t)(p) - 1;
-		}
 	} else if(p < 0) {
 		*direction = 0;
-		if(p > MAX_TIMER_PERIOD) {
-			*period = 0;
-		} else {
-			*period = (uint16_t)(-p) - 1;
-		}
-	} else if(p == 0) {
-		*period = 1;
-	}
+		p = -p;
+	 } else if(p == 0) {
+		 if(speed > 0) {
+			 *direction = 1;
+	     } else if(speed < 0) {
+	    	 *direction = 0;
+	     }
+	 }
 
-	if(*period < (MIN_TIMER_PERIOD)) {
-		*period = (MIN_TIMER_PERIOD);
-	}
+	 if(p > MAX_TIMER_PERIOD) {
+		 *period = 0;
+	 } else if(p < MIN_TIMER_PERIOD){
+		 *period = MIN_TIMER_PERIOD;
+	 } else {
+		 *period = (uint16_t)(p) - 1;
+	 }
 
-	if(*direction == 1 && distance >= 1800) {
-		*period = 0;
-	} else if(*direction == 0 && distance <= -1800) {
-		*period = 0;
-	}
+	 if(*direction == 1 && distance >= 1800) {
+		 *period = 0;
+	 } else if(*direction == 0 && distance <= -1800) {
+		 *period = 0;
+	 }
 
-	*flag = 0;
+	 *flag = 0;
 }

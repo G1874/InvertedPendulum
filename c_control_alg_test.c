@@ -9,7 +9,6 @@ const int32_t LQR_K_MATRIX[4] = {-248761,-157939,
 
 /* Coefficients derived from physical parameters */
 #define ACC_TO_SPD 25000 // Times SCALE_FACTOR
-#define RADIUS_FACTOR 77
 
 /* Coefficients used for sensor reading rescaling */
 #define DISTANCE_NORMALIZATION 20
@@ -18,6 +17,8 @@ const int32_t LQR_K_MATRIX[4] = {-248761,-157939,
 #define TP 20
 
 /* Select electronic hardware parameters */
+#define MAX_TIMER_PERIOD 65535
+#define MIN_TIMER_PERIOD 1359
 #define MAX_SPEED 100000
 #define STEPS_PER_REVOLUTION 200
 #define AS5600_RESOLUTION 4096
@@ -84,16 +85,41 @@ void AngleRescaling(uint16_t raw_angle, int32_t* angle_deg, int32_t* angle)
     *angle = (int32_t)(a * 31415 / 180 / SCALE_FACTOR);
 }
 
-void StepperNewPWM(int32_t speed, uint16_t* period)
+void StepperNewPWM(int32_t speed, int32_t distance, uint8_t* direction, uint16_t* period)
 {
 	int64_t p;
-    p = 2 * 31415 * 130 * 100 / (int64_t)speed / STEPS_PER_REVOLUTION;
-
-    if(p >= 0) {
-        *period = (uint16_t)p;
-    } else if(p < 0) {
-        *period = (uint16_t)(-p);
+    if(speed != 0){
+        p = 2 * 31415 * 130 * 100 / (int64_t)speed / STEPS_PER_REVOLUTION;
+    } else {
+        p = MAX_TIMER_PERIOD + 1;
     }
+	
+    if(p > 0) {
+        *direction = 1;
+    } else if(p < 0) {
+        *direction = 0;
+        p = -p;
+    } else if(p == 0) {
+        if(speed > 0) {
+            *direction = 1;
+        } else if(speed < 0) {
+            *direction = 0;
+        }
+    }
+
+    if(p > MAX_TIMER_PERIOD) {
+        *period = 0;
+    } else if(p < MIN_TIMER_PERIOD){
+        *period = MIN_TIMER_PERIOD;
+    } else {
+        *period = (uint16_t)(p) - 1;
+    }
+
+	if(*direction == 1 && distance >= 1800) {
+		*period = 0;
+	} else if(*direction == 0 && distance <= -1800) {
+		*period = 0;
+	}
 }
 
 void StepperNewPWMFlt(double speed, double* period)
@@ -106,29 +132,19 @@ int main()
 {
     uint16_t raw_angle = 2100;
     int32_t distance = -500;
-    int32_t speed = 77500;
+    int32_t speed = 63;
     int32_t d_angle;
     int32_t angle;
     int32_t p_angle = 1000;
     uint16_t period;
+    uint8_t direction;
 
-    AngleRescaling(raw_angle, &d_angle, &angle);
+    StepperNewPWM(speed, distance, &direction, &period);
 
     char buffer[64];
-    sprintf(buffer,"angle = %d\n",d_angle);
+    sprintf(buffer,"pwm period = %d\n",period);
     printf(buffer);
-
-    sprintf(buffer,"angle in radians = %d\n",angle);
-    printf(buffer);
-
-    ControlAlg(distance,angle,&p_angle,&speed);
-    
-    sprintf(buffer,"linear velocity = %d\n",speed);
-    printf(buffer);
-
-    StepperNewPWM(speed, &period);
-
-    sprintf(buffer,"pwm timer period = %d\n",period);
+    sprintf(buffer,"direction = %d\n",direction);
     printf(buffer);
 
     return 0;

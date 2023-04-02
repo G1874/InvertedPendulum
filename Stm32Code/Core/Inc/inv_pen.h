@@ -49,8 +49,7 @@ extern const int32_t LQR_K_MATRIX[4];
 #define SCALE_FACTOR 10000
 
 /* Coefficients derived from physical parameters */
-#define ACC_TO_SPD 2
-#define RADIUS_FACTOR 77
+#define ACC_TO_SPD 25000
 #define TORQUE_RADIUS 130
 
 /* Coefficients used for sensor reading rescaling */
@@ -61,8 +60,8 @@ extern const int32_t LQR_K_MATRIX[4];
 
 /* Select electronic hardware parameters */
 #define MAX_TIMER_PERIOD 65535
-#define MIN_TIMER_PERIOD 799
-#define MAX_SPEED 10000
+#define MIN_TIMER_PERIOD 1359
+#define MAX_SPEED 3100
 #define STEPS_PER_REVOLUTION 200
 #define AS5600_RESOLUTION 4096
 
@@ -98,7 +97,7 @@ void RxCallbackProc(UART_HandleTypeDef* huart, AS5600_TypeDef* dev, uint8_t* dat
 /* FUNCTIONS FOR COMPUTING NECESSARY PARAMETERS */
 void HCSR04_GetDistance(uint16_t* RechoTime, uint16_t* FechoTime, int32_t* distance);
 void AngleRescaling(uint16_t raw_angle, int32_t* angle_deg, int32_t* angle);
-void ControlAlg(int32_t distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
+void ControlAlg(int32_t distance, int32_t* p_distance, int32_t angle, int32_t* p_angle, int32_t* speed, uint8_t mode);
 void StepperNewPWM(int32_t speed, int32_t distance, uint8_t* direction, uint16_t* freq, uint8_t* flag);
 
 #endif /* INV_PEN_H_ */

@@ -53,7 +53,7 @@ AS5600_TypeDef* as;
 
 uint8_t dataIn[2];
 uint16_t period, echo1, echo2, raw_angle;
-int32_t angle, deg_angle, p_angle, distance, speed;
+int32_t angle, deg_angle, p_angle, distance, p_distance, speed;
 uint8_t direction;
 uint8_t flag1,flag2,flag3,flag4,mode;
 uint8_t error;
@@ -154,7 +154,7 @@ int main(void)
 	  if(flag2) {
 		  HCSR04_GetDistance(&echo1, &echo2, &distance);
 		  AngleRescaling(raw_angle, &deg_angle, &angle);
-		  ControlAlg(distance, angle, &p_angle, &speed, mode);
+		  ControlAlg(distance, &p_distance, angle, &p_angle, &speed, mode);
 		  StepperNewPWM(speed, distance, &direction, &period, &flag3);
 		  PcSend32bitSignedData(&huart2, deg_angle, 97);
 		  PcSend32bitSignedData(&huart2, distance, 100);

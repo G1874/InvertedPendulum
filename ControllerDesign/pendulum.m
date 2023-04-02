@@ -22,5 +22,6 @@ dy(1,1) = y(2);
 dy(2,1) = ((I+m*l^2)*(b*y(2)-m*l*y(4)^2*Sy-u)+m^2*l^2*g*Sy*Cy)/Ky;
 dy(3,1) = y(4);
 dy(4,1) = (u*m*l*Cy-b*m*l*y(2)*Cy-(M+m)*m*l*g*Sy+m^2*l^2*y(4)^2*Sy*Cy)/Ky;
+
 end
 

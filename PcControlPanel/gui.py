@@ -112,10 +112,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=60)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=31)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=60)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=31)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -210,7 +210,7 @@ class Gui():
         self.textAng.place(x=15,y=457)
 
     def defineExtraReading(self):
-        self.textExtr = Text(master=self.top1,height=17,width=11,background='#293241',fg='#E0FBFC')
+        self.textExtr = Text(master=self.top1,height=17,width=12,background='#293241',fg='#E0FBFC')
         self.textExtr.configure(state='disabled')
         self.textExtr.grid(row=0,column=1)
 
