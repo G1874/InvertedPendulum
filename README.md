@@ -18,4 +18,4 @@ Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR
 ### TODO:
 - Implementing automatic swing up
 - Overhouling fixed point computation functions to use dedicated arm cortex-m3 library for better perfomance
-- Implementing saving collected data to file
+- Implementing saving collected data to csv file
