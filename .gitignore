@@ -21,6 +21,7 @@ Startup/
 *.mxproject
 *.cproject
 
+c_control_alg_test.c
 output/
 ControllerDesign/control_agl_test.asv
 ControllerDesign/control_agl_test.m

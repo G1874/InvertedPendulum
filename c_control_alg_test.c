@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-const int32_t LQR_K_MATRIX[4] = {-248761,-157939,
-                                -4926922,-1099123}; // Times SCALE_FACTOR
+const int32_t LQR_K_MATRIX[4] = {-6723,-20395,-98249,-32525}; // Times SCALE_FACTOR
 
 /* Scale factor used for fixed point calculations */
 #define SCALE_FACTOR 10000
