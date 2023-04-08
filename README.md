@@ -1,11 +1,4 @@
 # InvertedPendulum
-#### Table of contents:
-1) [[#Description]]
-2) [[#Stm32 code]]
-3) [[#GUI]]
-4) [[#Control law derivation]]
-5) [[#Acknowledgements]]
-6) [[#TODO]]
 
 ### Description:
 Code for control of an inverted pendulum on a cart used for testing control algorithms on a nonlinear object. Inverted pendulum is controled by STM32L152RE nucleo board with pc graphical user interfece written in python. Control law is derived using a matlab live script.
