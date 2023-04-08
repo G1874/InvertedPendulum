@@ -22,7 +22,7 @@ Startup/
 *.cproject
 
 
-control_agl_test.c
+c_control_alg_test.c
 output/
 ControllerDesign/control_agl_test.asv
 ControllerDesign/control_agl_test.m
