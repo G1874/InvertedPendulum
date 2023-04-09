@@ -12,7 +12,7 @@ Graphical user interfece written in python using tkinter package. It displays re
 ### Control law derivation:
 Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR was derived in matlab using a state space model linearized aroud operating point.
 
-![Natural Response](Images&Videos/NaturalResponse.gif | width="300" height="100")
+![Natural Response](Images&Videos/NaturalResponse.gif {width=300px height=100px})
 ![Graph](Images&Videos/ResponseGraph.png)
 ![Controlled Response](Images&Videos/ControlledResponse.gif)
 
