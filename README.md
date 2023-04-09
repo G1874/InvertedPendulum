@@ -14,9 +14,9 @@ Graphical user interfece written in python using tkinter package. It displays re
 ### Control law derivation:
 Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR was derived in matlab using a state space model linearized aroud operating point.
 
-<img src="./Images&Videos/NaturalResponse.gif" height="75%" width="75%">
-<img src="./Images&Videos/ResponseGraph.png" height="75%" width="75%">
-<img src="./Images&Videos/ControlledResponse.gif" height="75%" width="75%">
+<img src="./Images&Videos/NaturalResponse.gif" height="65%" width="65%">
+<img src="./Images&Videos/ResponseGraph.png" height="65%" width="65%">
+<img src="./Images&Videos/ControlledResponse.gif" height="65%" width="65%">
 
 ### Acknowledgements:
 - Project uses modified AS5600 magnetic encoder stm32 library originaly made by Nicholas Morrow [[https://github.com/nicholasmorrow/AS5600]]
