@@ -9,14 +9,14 @@ Code written in C using HAL library. It contains fixed point real time computati
 ### GUI:
 Graphical user interfece written in python using tkinter package. It displays real time data, read from stm32 using pyserial package and displays it in graph form using matplotlib package. It allows for sending instructions to the stm and displays communicates and errors read from the stm.
 
-<img src="./Images&Videos/GUI.png" height="80%" width="80%">
+<img src="./Images&Videos/GUI.png" height="75%" width="75%">
 
 ### Control law derivation:
 Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR was derived in matlab using a state space model linearized aroud operating point.
 
-<img src="./Images&Videos/NaturalResponse.gif" height="80%" width="80%">
-<img src="./Images&Videos/ResponseGraph.png" height="80%" width="80%">
-<img src="./Images&Videos/ControlledResponse.gif" height="80%" width="80%">
+<img src="./Images&Videos/NaturalResponse.gif" height="75%" width="75%">
+<img src="./Images&Videos/ResponseGraph.png" height="75%" width="75%">
+<img src="./Images&Videos/ControlledResponse.gif" height="75%" width="75%">
 
 ### Acknowledgements:
 - Project uses modified AS5600 magnetic encoder stm32 library originaly made by Nicholas Morrow [[https://github.com/nicholasmorrow/AS5600]]
