@@ -10,20 +10,20 @@ Code written in C using HAL library. It contains fixed point real time computati
 Graphical user interfece written in python using tkinter package. It displays real time data, read from stm32 using pyserial package and displays it in graph form using matplotlib package. It allows for sending instructions to the stm and displays communicates and errors read from the stm.
 
 <p align="center">
-<img src="./Images&Videos/GUI.png" height="65%" width="65%">
+<img src="./Images/GUI.png" height="65%" width="65%">
 </p>
   
 ### Control law derivation:
 Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR was derived in matlab using a state space model linearized aroud operating point.
 
 <p align="center">
-<img src="./Images&Videos/NaturalResponse.gif" height="65%" width="65%">
+<img src="./Images/NaturalResponse.gif" height="65%" width="65%">
 </p>
 <p align="center">
-<img src="./Images&Videos/ResponseGraph.png" height="65%" width="65%">
+<img src="./Images/ResponseGraph.png" height="65%" width="65%">
 </p>
 <p align="center">
-<img src="./Images&Videos/ControlledResponse.gif" height="65%" width="65%">
+<img src="./Images/ControlledResponse.gif" height="65%" width="65%">
 </p>
   
 ### Acknowledgements:
