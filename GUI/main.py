@@ -1,4 +1,3 @@
-from SerialCOM import SerialCommunication
 from gui import Gui
 
 def main():
