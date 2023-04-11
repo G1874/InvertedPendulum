@@ -7,7 +7,9 @@ https://user-images.githubusercontent.com/93823195/230814630-cffa4199-a621-4cb4-
 ### Description:
 Code for control of an inverted pendulum on a cart used for testing control algorithms on a nonlinear object. Inverted pendulum is controled by STM32L152RE nucleo board with pc graphical user interfece written in python. Control law is derived using a matlab live script.
 
-![InvertedPendulum](https://user-images.githubusercontent.com/93823195/231308479-37ab8817-c530-455a-9c54-906b93e2adaf.png)
+<p align="center">
+<img src="https://user-images.githubusercontent.com/93823195/231308479-37ab8817-c530-455a-9c54-906b93e2adaf.png" height="65%" width="65%">
+</p>
 
 ### Stm32 code:
 Code written in C using HAL library. It contains fixed point real time computation of a stepper motor step frequency and rotation, acquisition of data from an ultrasonic distance sensor and a magnetic encoder, procedures for communication with pc by uart.
