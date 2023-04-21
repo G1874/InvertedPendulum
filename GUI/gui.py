@@ -112,10 +112,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=31)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=35)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=31)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=35)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
@@ -221,7 +221,6 @@ class Gui():
         self.textAng.insert(1.0, str(self.serialcom.ang) + '\n')
         self.textDist.configure(state='disabled')
         self.textAng.configure(state='disabled')
-
     
     def writeExtraReadingData(self):
         self.textExtr.configure(state='normal')
@@ -245,7 +244,7 @@ class Gui():
         self.c.plot(self.serialcom.speed)
 
         self.writeExtraReadingData()
-        #self.c.set_ylim(ymin=0,ymax=100000)
+        self.c.set_ylim(ymin=-3500,ymax=3500)
 
     def toggleAnimationPause(self):
         if self.paused:

@@ -110,13 +110,13 @@ int main(void)
 	  /* Initialization Start */
   	  as = AS5600_New();
 
-	  error = AS5600_Init(as, &hi2c2);
-	  if(error!=0) {
-		  PcSendErrorMessage(&huart2, error, 101);
+	  if ((error = AS5600_Init(as, &hi2c2)) != 0) {
+		  PcSendErrorMessage(&huart2, error, ERROR_DATA);
 	  }
 
-	  error = InvPen_Init(&htim10, TIM_CHANNEL_1, &htim11, TIM_CHANNEL_1, &htim6, dataIn, &htim2, TIM_CHANNEL_1, &huart2);
-	  if(error!=0) {
+	  if((error = InvPen_Init(&htim10, TIM_CHANNEL_1, &htim11, TIM_CHANNEL_1,
+			  	  	  	  	  &htim6, dataIn, &htim2, TIM_CHANNEL_1, &huart2)) != 0)
+	  {
 		  Error_Handler();
 	  }
 
@@ -140,12 +140,11 @@ int main(void)
   {
 
 	  if(flag1) {
-		  error = HCSR04_StartMeasurment(&htim10, &htim11, &htim7, Trig_GPIO_Port, Trig_Pin);
-		  if(error!=0) {
+		  if((error = HCSR04_StartMeasurment(&htim10, &htim11, &htim7, Trig_GPIO_Port, Trig_Pin)) != 0) {
 			  Error_Handler();
 		  }
 		  if(AS5600_GetAngle(as, &raw_angle) != HAL_OK) {
-			  error = 17;
+			  error = ERR_AS5600_READ;
 		  	  Error_Handler();
 		  }
 		  flag1 = 0;
@@ -156,10 +155,10 @@ int main(void)
 		  AngleRescaling(raw_angle, &deg_angle, &angle);
 		  ControlAlg(distance, &p_distance, angle, &p_angle, &speed, mode);
 		  StepperNewPWM(speed, distance, &direction, &period, &flag3);
-		  PcSend32bitSignedData(&huart2, deg_angle, 97);
-		  PcSend32bitSignedData(&huart2, distance, 100);
-		  PcSend32bitSignedData(&huart2, speed, 117);
-		  PcSend16bitData(&huart2, period, 120);
+		  PcSend32bitSignedData(&huart2, deg_angle, ANGLE_DATA);
+		  PcSend32bitSignedData(&huart2, distance, DISTANCE_DATA);
+		  PcSend32bitSignedData(&huart2, speed, SPEED_DATA);
+		  PcSend16bitData(&huart2, period, COUNTER_PERIOD_DATA);
 		  flag2 = 0;
 	  }
 
@@ -221,9 +220,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	error = OverflowProc(htim, &htim6, &htim7, Trig_GPIO_Port, Trig_Pin, &direction, &period,
-							&flag1, &flag4, &flag3, Dir_GPIO_Port, Dir_Pin, &htim2, TIM_CHANNEL_1, mode);
-	if(error!=0) {
+	if((error = OverflowProc(htim, &htim6, &htim7, Trig_GPIO_Port, Trig_Pin, &direction, &period,
+			&flag1, &flag4, &flag3, Dir_GPIO_Port, Dir_Pin, &htim2, TIM_CHANNEL_1, mode)) != 0)
+	{
 		Error_Handler();
 	}
 }
@@ -243,10 +242,14 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+
   HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-  PcSendErrorMessage(&huart2, error, 101);
+  PcSendErrorMessage(&huart2, error, ERROR_DATA);
+
   while (1)
   {
+	  HAL_Delay(500);
+	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   }
   /* USER CODE END Error_Handler_Debug */
 }

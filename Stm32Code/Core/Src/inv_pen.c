@@ -36,7 +36,7 @@ LICENSE:
 
 /*******************  CONSTANTS & GLOBAL VARIABLES  ********************/
 
-const int32_t LQR_K_MATRIX[4] = {-6723,-20395,-98249,-32525};
+const int32_t LQR_K_MATRIX[4] = {-4697,-4809,-97364,-24450};	//{-2697,-2809,-97364,-24450},{-6723,-20395,-98249,-32525}
 
 /*******************    FUNCTION IMPLEMENTATIONS    ********************/
 
@@ -143,6 +143,7 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 		HAL_TIM_Base_Stop(timHandle);
 		HAL_GPIO_WritePin(TrigPort, TrigPin, GPIO_PIN_RESET);
 	}
+
 	if(timHandle->Instance == synchTimHandle->Instance) {
 		if(!*flag3) {
 
@@ -164,9 +165,10 @@ uint8_t OverflowProc(TIM_HandleTypeDef* timHandle, TIM_HandleTypeDef* synchTimHa
 			*flag1 = 1;
 
 		} else {
-			return 19;
+			return ERR_CTRL_TIMEOUT;
 		}
 	}
+
 	return 0;
 }
 
@@ -189,49 +191,49 @@ void RxCallbackProc(UART_HandleTypeDef* huart, AS5600_TypeDef* dev, uint8_t* dat
 
 		switch(dataIn[0]) {
 			/* Mode change */
-			case 65:	// Manual control
+			case MAN_CTRL:		// Manual control
 				*mode = 2;
-				PcSendErrorMessage(huart, 4, 99);
+				PcSendErrorMessage(huart, COM_MAN_CTRL, COMMUNICATE);
 				break;
-			case 77:	// Automatic control
+			case AUTO_CTRL:		// Automatic control
 				*speed = 0;
 				*mode = 1;
 				*flag = 1;
-				PcSendErrorMessage(huart, 5, 99);
+				PcSendErrorMessage(huart, COM_AUTO_CTRL, COMMUNICATE);
 				break;
-			case 83:	// Stop motor
+			case PAUSE_MTR:		// Pause motor
 				*mode = 0;
 				*flag = 1;
 				break;
-			case 72:	// Pause motor
+			case STOP_MTR:		// Stop motor
 				*mode = 3;
 				*flag = 1;
-				PcSendErrorMessage(huart, 6, 99);
+				PcSendErrorMessage(huart, COM_STOP_MTR, COMMUNICATE);
 				break;
 			/* AS5600 magnetic encoder state report */
-			case 84:
+			case SEND_MAG_STAT:
 				if(AS5600_GetMagnetStatus(dev, &as5600_data) == HAL_OK) {
-					PcSendErrorMessage(huart, 9, 99);
-					PcSend8bitData(huart, as5600_data, 115);
+					PcSendErrorMessage(huart, COM_MAG_STAT, COMMUNICATE);
+					PcSend8bitData(huart, as5600_data, AS5600_CONFIG_DATA);
 				} else {
-					PcSendErrorMessage(huart, 17, 101);
+					PcSendErrorMessage(huart, ERR_AS5600_READ, ERROR_DATA);
 				}
 				break;
-			case 71:
+			case SEND_AGC_REG:
 				if(AS5600_GetAGCSetting(dev, &as5600_data) == HAL_OK) {
-					PcSendErrorMessage(huart, 10, 99);
-					PcSend8bitData(huart, as5600_data, 115);
+					PcSendErrorMessage(huart, COM_AGC_REG, COMMUNICATE);
+					PcSend8bitData(huart, as5600_data, AS5600_CONFIG_DATA);
 				} else {
-					PcSendErrorMessage(huart, 17, 101);
+					PcSendErrorMessage(huart, ERR_AS5600_READ, ERROR_DATA);
 				}
 				break;
 			/* Set AS5600 magnetic encoder zero position */
-			case 90:
+			case SET_ZERO_POSITION:
 				AS5600_GetRawAngle(dev, &as5600_angle);
 				if(AS5600_SetStartPosition(dev, as5600_angle) == HAL_OK) {
-					PcSendErrorMessage(huart, 11, 99);
+					PcSendErrorMessage(huart, COM_ZERO_POSITION, COMMUNICATE);
 				} else {
-					PcSendErrorMessage(huart, 8, 101);
+					PcSendErrorMessage(huart, ERR_AS5600_WRITE, ERROR_DATA);
 				}
 				break;
 		}
@@ -251,13 +253,13 @@ uint8_t InvPen_Init(TIM_HandleTypeDef* RtimHandle, uint32_t RtimChannel, TIM_Han
 	__HAL_TIM_SET_COMPARE(pwmTimHandle, pwmTimChannel, 20);
 
 	if(HAL_TIM_IC_Start_IT(RtimHandle, RtimChannel) != HAL_OK) {
-		return 13;
+		return ERR_R_ICTIM_INIT;
 	}
 	if(HAL_TIM_IC_Start_IT(FtimHandle, FtimChannel) != HAL_OK) {
-		return 14;
+		return ERR_F_ICTIM_INIT;
 	}
 	if(HAL_TIM_Base_Start_IT(synchTimHandle) != HAL_OK) {
-		return 15;
+		return ERR_SYNCH_TIM_INIT;
 	}
 	HAL_UART_Receive_IT(huart, dataIn, 2);
 	return 0;
@@ -269,7 +271,7 @@ uint8_t HCSR04_StartMeasurment(TIM_HandleTypeDef* RtimHandle, TIM_HandleTypeDef*
 	HAL_GPIO_WritePin(TrigPort, TrigPin, GPIO_PIN_SET);
 
 	if(HAL_TIM_Base_Start_IT(trigTimHandle) != HAL_OK) {
-		return 16;
+		return ERR_STAR_MEASURMENT;
 	}
 
 	__HAL_TIM_SET_COUNTER(RtimHandle, 0);

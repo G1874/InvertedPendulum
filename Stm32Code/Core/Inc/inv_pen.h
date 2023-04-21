@@ -60,10 +60,44 @@ extern const int32_t LQR_K_MATRIX[4];
 
 /* Select electronic hardware parameters */
 #define MAX_TIMER_PERIOD 65535
-#define MIN_TIMER_PERIOD 1359
-#define MAX_SPEED 3100
+#define MIN_TIMER_PERIOD 1299	//1359
+#define MAX_SPEED 3500			//3100
 #define STEPS_PER_REVOLUTION 200
 #define AS5600_RESOLUTION 4096
+
+/* Error codes */
+#define ERR_R_ICTIM_INIT 13
+#define ERR_F_ICTIM_INIT 14
+#define ERR_SYNCH_TIM_INIT 15
+#define ERR_STAR_MEASURMENT 16
+#define ERR_AS5600_WRITE 8
+#define ERR_AS5600_READ 17
+#define ERR_CTRL_TIMEOUT 19
+
+#define COM_MAN_CTRL 4
+#define COM_AUTO_CTRL 5
+#define COM_STOP_MTR 6
+#define COM_MAG_STAT 9
+#define COM_AGC_REG 10
+#define COM_ZERO_POSITION 11
+
+/* Data markers */
+#define ERROR_DATA 101
+#define COMMUNICATE 99
+#define	DISTANCE_DATA 100
+#define ANGLE_DATA 97
+#define SPEED_DATA 117
+#define COUNTER_PERIOD_DATA 120
+#define AS5600_CONFIG_DATA 115
+
+/* Instructions from PC */
+#define MAN_CTRL 65
+#define AUTO_CTRL 77
+#define PAUSE_MTR 83
+#define STOP_MTR 72
+#define SEND_MAG_STAT 84
+#define SEND_AGC_REG 71
+#define SET_ZERO_POSITION 90
 
 /***********************    FUNCTION PROTOTYPES    ***********************/
 
