@@ -1,7 +1,7 @@
 # InvertedPendulum
 
 <p align="center">
-https://user-images.githubusercontent.com/93823195/234073343-8e2aae81-15c9-49ab-a0d5-55e47947dc47.mp4
+<img src="https://user-images.githubusercontent.com/93823195/234073343-8e2aae81-15c9-49ab-a0d5-55e47947dc47.mp4" height="65%" width="65%">
 </p>
 
 ### Description:
