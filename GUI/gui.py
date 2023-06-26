@@ -112,10 +112,10 @@ class Gui():
         self.top2.destroy()
 
     def rightInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=35)
+        self.serialcom.sendInstruction(instructionNrr=82,additionalArgument=32)
 
     def leftInstr(self,event):
-        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=35)
+        self.serialcom.sendInstruction(instructionNrr=76,additionalArgument=32)
 
     def pauseMotor(self,event):
         self.serialcom.sendInstruction(instructionNrr=83)
