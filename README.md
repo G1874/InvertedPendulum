@@ -36,8 +36,3 @@ Currently the inverted pendulum is controlled using LQR, the gain matrix for LQR
   
 ### Acknowledgements:
 - Project uses modified AS5600 magnetic encoder stm32 library originaly made by [Nicholas Morrow](https://github.com/nicholasmorrow/AS5600)
-
-### TODO:
-- Implementing automatic swing up
-- Overhouling fixed point computation functions to use dedicated arm cortex-m3 library for better perfomance
-- Implementing saving collected data to csv file
