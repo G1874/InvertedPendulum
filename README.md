@@ -15,7 +15,7 @@ Code for control of an inverted pendulum on a cart.
 The pendulum is controlled by an stm32l152re microcontroller.
 
 ### GUI:
-Graphical user interfece written in python using tkinter package. It displays real time data, read from stm32 via uart and displays it in graph form
+Graphical user interfece displays real time data read from stm32 via uart and displays it in graph form
 
 <p align="center">
 <img src="./Images/GUI.png" height="65%" width="65%">
